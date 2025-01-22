@@ -1,0 +1,9 @@
+.parcel-cache
+dist
+node_modules
+*.log
+*.pyc
+__pycache__/
+venv/
+model/backend/settings.py
+migrations
