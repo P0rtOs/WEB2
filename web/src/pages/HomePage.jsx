@@ -1,13 +1,12 @@
-// src/pages/HomePage.jsx
 import React from "react";
-import { Container, Row, Col, Button } from "react-bootstrap"; // Імпортуємо компоненти Bootstrap
-import Header from "../components/Header"; // Імпортуємо компонент Header
+import { Container, Row, Col, Button } from "react-bootstrap";
+import Header from "../components/Header";
 import EventList from "../components/EventList";
 
 const HomePage = () => {
   return (
     <>
-      <Header /> {/* Додаємо Header перед контентом сторінки */}
+      <Header /> {}
       <Container className="text-center my-5">
         <Row>
           <Col>

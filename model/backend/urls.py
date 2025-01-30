@@ -8,5 +8,6 @@ def index(request):
 urlpatterns = [
     path('', index),
     path('admin/', admin.site.urls),
-    path('api/', include('model.events.urls')),  # додаємо наші API маршрути
+    path('api/', include('model.events.urls')),
+    path('auth/', include('model.users.urls')),
 ]

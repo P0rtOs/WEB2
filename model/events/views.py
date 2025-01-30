@@ -6,6 +6,6 @@ from .serializers import EventSerializer
 
 class EventListView(APIView):
     def get(self, request):
-        events = Event.objects.all()  # Отримуємо всі івенти
+        events = Event.objects.all()
         serializer = EventSerializer(events, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)

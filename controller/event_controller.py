@@ -1,7 +1,6 @@
 import os
 import django
 
-# Ініціалізація Django
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'model.settings')
 
 from model.events.models import Event
