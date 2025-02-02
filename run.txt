@@ -1,25 +1,26 @@
+winget install Python.Python.3.13
+
+
+
+
 python -m venv venv
-
 venv\Scripts\activate.bat
+winget install Python.Python.3.11
 
-
+python -m pip install --upgrade pip
 pip install -r requirements.txt
 
-pip install django
-
-pip install dotenv
-
-docker pull postgres
-
+docker pull postgres:latest
 docker run --name postgres-container -e POSTGRES_USER=db_user -e POSTGRES_PASSWORD=db_password -e POSTGRES_DB=db_name -p 5432:5432 -d postgres
 
-docker ps
+timeout /t 5  # (замість sleep 5, бо це Windows)
 
+docker ps
 docker exec -i postgres-container psql -U db_user -d db_name < backup.sql
 
 python manage.py migrate
+python manage.py runserver
 
-python manage.py runserver 
 
 
 
