@@ -1,0 +1,31 @@
+python -m venv venv
+
+venv\Scripts\activate.bat
+
+
+pip install -r requirements.txt
+
+pip install django
+
+pip install dotenv
+
+docker pull postgres
+
+docker run --name postgres-container -e POSTGRES_USER=db_user -e POSTGRES_PASSWORD=db_password -e POSTGRES_DB=db_name -p 5432:5432 -d postgres
+
+docker ps
+
+docker exec -i postgres-container psql -U db_user -d db_name < backup.sql
+
+python manage.py migrate
+
+python manage.py runserver 
+
+
+
+
+
+
+in main root:
+cd web
+npm run dev

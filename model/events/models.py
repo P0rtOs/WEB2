@@ -7,3 +7,10 @@ class Event(models.Model):
 
     def __str__(self):
         return self.title
+    
+@classmethod
+def get_all_events(cls):
+        """
+        Повертає список усіх подій.
+        """
+        return list(cls.objects.all())

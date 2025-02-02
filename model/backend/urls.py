@@ -6,8 +6,6 @@ def index(request):
     return HttpResponse("It works")
 
 urlpatterns = [
-    path('', index),
-    path('admin/', admin.site.urls),
-    path('api/', include('model.events.urls')),
-    path('auth/', include('model.users.urls')),
+    path('admin/', admin.site.urls),  # Панель адміністратора
+    path('api/', include('controller.urls')),  # Всі API-запити йдуть у контролер
 ]

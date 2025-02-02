@@ -5,5 +5,28 @@ node_modules
 *.pyc
 __pycache__/
 venv/
-model/backend/settings.py
 migrations
+
+# Python
+*.pyo
+*.pyd
+*.db
+*.sqlite3
+*.log
+*.bak
+*.swp
+*.swo
+.venv/
+
+# Node.js
+node_modules/
+.parcel-cache/
+dist/
+
+# Docker
+*.pid
+*.sock
+*.db
+
+# Environment variables
+.env
