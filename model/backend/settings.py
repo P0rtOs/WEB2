@@ -84,8 +84,8 @@ TEMPLATES = [
 AUTH_USER_MODEL = "users.CustomUser"
 
 DJOSER = {
-    "USER_CREATE_PASSWORD_RETYPE": True,
-    "LOGIN_FIELD": "email",
+    "LOGIN_FIELD": "login",  # Використовуємо login замість username
+    "USER_CREATE_PASSWORD_RETYPE": False,  # Вимикаємо повтор пароля
     "SERIALIZERS": {
         "user_create": "model.users.serializers.CustomUserCreateSerializer",
         "user": "model.users.serializers.CustomUserSerializer",

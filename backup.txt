@@ -1,0 +1,3 @@
+docker exec -it postgres-container bash
+pg_dump -U db_user -d db_name -f /backup.sql
+docker cp postgres-container:/backup.sql ./backup.sql
