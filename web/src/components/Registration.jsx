@@ -1,9 +1,8 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router";
-import { loginUser } from "../Auth_api.js";
-import "../css/Login.scss";
+import { registerUser } from "../Auth_api.js";
 
-const LoginPage = () => {
+const Registration = () => {
     const [formData, setFormData] = useState({
         email: "",
         password: "",
@@ -20,15 +19,14 @@ const LoginPage = () => {
         setError("");
 
         try {
-            await loginUser(formData.email, formData.password);
-            navigate("/");
+            await registerUser(formData.email, formData.password, navigate);
         } catch (err) {
             setError(err.message);
         }
     };
 
     return (
-        <div className="login-container">
+        <div className="regist-container">
             <form onSubmit={handleSubmit}>
                 <div className="mb-3">
                     <label htmlFor="email" className="form-label">
@@ -60,11 +58,11 @@ const LoginPage = () => {
                 </div>
                 {error && <div className="alert alert-danger">{error}</div>}
                 <button type="submit" className="btn btn-primary w-100">
-                    Login
+                    Registrate
                 </button>
             </form>
         </div>
     );
 };
 
-export default LoginPage;
+export default Registration;

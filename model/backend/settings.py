@@ -84,8 +84,8 @@ TEMPLATES = [
 AUTH_USER_MODEL = "users.CustomUser"
 
 DJOSER = {
-    "LOGIN_FIELD": "login",  # Використовуємо login замість username
-    "USER_CREATE_PASSWORD_RETYPE": False,  # Вимикаємо повтор пароля
+    "LOGIN_FIELD": "login",
+    "USER_CREATE_PASSWORD_RETYPE": False,
     "SERIALIZERS": {
         "user_create": "model.users.serializers.CustomUserCreateSerializer",
         "user": "model.users.serializers.CustomUserSerializer",
@@ -184,7 +184,7 @@ SIMPLE_JWT = {
     'AUTH_HEADER_TYPES': ('JWT',),
     'UPDATE_LAST_LOGIN': True, 
     'ACCESS_TOKEN_LIFETIME': timedelta(seconds=10),
-    'REFRESH_TOKEN_LIFETIME': timedelta(minutes=2),
+    'REFRESH_TOKEN_LIFETIME': timedelta(minutes=20),
 }
 
 AUTHENTICATION_BACKENDS = (
