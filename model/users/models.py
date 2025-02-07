@@ -43,7 +43,11 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
 
     # Використовуємо email для автентифікації (але зберігаємо username для відображення)
     USERNAME_FIELD = "email"
-    REQUIRED_FIELDS = []  # Додаткових полів не вимагається
+    REQUIRED_FIELDS = []
 
     def __str__(self):
         return self.email
+    
+    @property
+    def is_authenticated(self):
+        return True

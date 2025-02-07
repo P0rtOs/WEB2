@@ -69,6 +69,7 @@ const refreshToken = async () => {
 
     try {
         const response = await api.post("/token/jwt/refresh/", { refresh });
+        console.warn("123");
         setAuthToken(response.data.access);
         localStorage.setItem("accessToken", response.data.access);
         return response.data.access;
