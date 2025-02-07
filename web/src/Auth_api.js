@@ -52,7 +52,6 @@ const loginUser = async (email, password) => {
 const verifyToken = async (token) => {
     try {
         const response = await api.post("/token/jwt/verify/", { token });
-        console.log("Токен валідний:", response.data);
         return true;
     } catch (error) {
         console.error(
@@ -65,13 +64,11 @@ const verifyToken = async (token) => {
 
 const refreshToken = async () => {
     const refresh = localStorage.getItem("refreshToken");
-    console.log("Маємо refreshToken:", refresh);
 
     if (!refresh) throw new Error("Немає refresh token'а!");
 
     try {
         const response = await api.post("/token/jwt/refresh/", { refresh });
-        console.log("Оновлення токена успішне:", response.data.access);
         setAuthToken(response.data.access);
         localStorage.setItem("accessToken", response.data.access);
         return response.data.access;
@@ -99,14 +96,11 @@ const updateUserProfile = async (data) => {
 const authRequest = async (callback, navigate) => {
     let token = localStorage.getItem("accessToken");
 
-    console.log("Перевіряємо accessToken:", token);
-
     if (!token || !(await verifyToken(token))) {
         console.warn("Access token недійсний. Пробуємо оновити...");
 
         try {
             token = await refreshToken();
-            console.log("Новий accessToken отримано:", token);
         } catch (error) {
             console.error("Не вдалося оновити токен:", error);
             logoutUser(navigate);
@@ -115,6 +109,15 @@ const authRequest = async (callback, navigate) => {
     }
 
     return callback();
+};
+
+const getUserType = async () => {
+    const response = await getUserProfile();
+    return response.data.user_type;
+};
+
+const setUserType = async (type) => {
+    return updateUserProfile({ user_type: type });
 };
 
 export {
@@ -126,4 +129,6 @@ export {
     updateUserProfile,
     logoutUser,
     authRequest,
+    getUserType,
+    setUserType,
 };

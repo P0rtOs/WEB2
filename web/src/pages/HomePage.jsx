@@ -2,7 +2,6 @@ import React from "react";
 import { Container, Row, Col, Button } from "react-bootstrap";
 import Header from "../components/Header.jsx";
 import EventList from "../components/EventList.jsx";
-import TestButton from "../components/ProtectedTestButton.jsx";
 
 const HomePage = () => {
     return (
@@ -18,7 +17,7 @@ const HomePage = () => {
                             Тут ви можете створювати події, керувати ними та
                             брати участь у найкращих заходах.
                         </p>
-                        <Button variant="primary" href="/regist">
+                        <Button variant="primary" href="/register">
                             Зареєструватися
                         </Button>{" "}
                         <Button variant="secondary" href="/events">
@@ -27,7 +26,6 @@ const HomePage = () => {
                     </Col>
                 </Row>
                 <EventList />
-                <TestButton />
             </Container>
         </>
     );

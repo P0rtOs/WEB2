@@ -376,6 +376,8 @@ COPY public.auth_permission (id, name, content_type_id, codename) FROM stdin;
 --
 
 COPY public.django_admin_log (id, action_time, object_id, object_repr, action_flag, change_message, content_type_id, user_id) FROM stdin;
+1	2025-02-05 12:52:09.035266+00	1	ruinit' i fidit'	1	[{"added": {}}]	2	5
+2	2025-02-05 12:53:39.73101+00	2	nu ili v rarvel mivals	1	[{"added": {}}]	2	5
 \.
 
 
@@ -428,6 +430,7 @@ COPY public.django_migrations (id, app, name, applied) FROM stdin;
 --
 
 COPY public.django_session (session_key, session_data, expire_date) FROM stdin;
+z0a85mged8u04g047j5p0zoarjjt9lv1	.eJxVjEEOwiAQRe_C2hA6lAFcuvcMDTCDVA0kpV0Z765NutDtf-_9l5jCtpZp67xMM4mzMOL0u8WQHlx3QPdQb02mVtdljnJX5EG7vDbi5-Vw_w5K6OVbowWl0CdmrY1KYwbrB0THDpAdEToAi8Z4yDEBRGJLSg-ZrFGjHbx4fwC54TbN:1tfesS:RliGi1Nl2mcZNYQS73w8WHVf-P7lC3sfBmbGrZsf_Zo	2025-02-19 12:51:36.53938+00
 \.
 
 
@@ -436,6 +439,8 @@ COPY public.django_session (session_key, session_data, expire_date) FROM stdin;
 --
 
 COPY public.events_event (id, title, description, date) FROM stdin;
+1	ruinit' i fidit'	v dotke	2025-02-05 12:52:06+00
+2	nu ili v rarvel mivals	надеюсь робит	2025-01-07 22:55:47+00
 \.
 
 
@@ -446,6 +451,10 @@ COPY public.events_event (id, title, description, date) FROM stdin;
 COPY public.users_customuser (id, password, last_login, is_superuser, email, first_name, last_name, is_active, is_staff, username) FROM stdin;
 1	pbkdf2_sha256$870000$NvCe2UazhTRl6TccaXuXKV$i/eFTzEDjFwVDGg06E6G/IYRViFtIAkOhJJydGOcAC0=	\N	f	test@example.com			t	f	test
 2	pbkdf2_sha256$870000$4KoaYPWRHYrKDFAu2JaC94$mzNmefpKLvAPGxRbX6cPrhBls2byLmKj49kl1fTR+nA=	\N	f	te2s1t@example.com			t	f	te2s1t
+3	pbkdf2_sha256$870000$DaossHgWwArhAcoc8bkVnG$xnA698k1JlwacgNTzbSFXtrHl6ub9VtZJk8yx0T+/Sg=	2025-02-04 19:48:29.046227+00	f	asdas@gmail.com			t	f	asdas
+4	pbkdf2_sha256$870000$bmd5TyOltDWlWn5Ank7h5x$ociCEZjpxUBBOV4BBc/ZNEs/Pfh6nB3bNTtYf+ISP+s=	2025-02-04 20:01:15.851641+00	f	aboba@gmail.com			t	f	aboba
+5	pbkdf2_sha256$870000$wmUj9O1iqxNcwn2DaCyt1B$PXbcIhDandydZC8B1217QGBBfl28wKSed1LSQpRw+8Q=	2025-02-05 12:51:36.535939+00	t	admin@gmail.com			t	t	admin
+6	pbkdf2_sha256$870000$mrBcwTnsxaDkY4T7WOXswc$MLkA5aoX2NDfqvLQVOcUYmG2Kdafao5o99faLsIy5qc=	2025-02-05 13:36:42.44687+00	f	ivabobula136@gmail.com			t	f	ivabobula136
 \.
 
 
@@ -490,7 +499,7 @@ SELECT pg_catalog.setval('public.auth_permission_id_seq', 28, true);
 -- Name: django_admin_log_id_seq; Type: SEQUENCE SET; Schema: public; Owner: db_user
 --
 
-SELECT pg_catalog.setval('public.django_admin_log_id_seq', 1, false);
+SELECT pg_catalog.setval('public.django_admin_log_id_seq', 2, true);
 
 
 --
@@ -511,7 +520,7 @@ SELECT pg_catalog.setval('public.django_migrations_id_seq', 21, true);
 -- Name: events_event_id_seq; Type: SEQUENCE SET; Schema: public; Owner: db_user
 --
 
-SELECT pg_catalog.setval('public.events_event_id_seq', 1, false);
+SELECT pg_catalog.setval('public.events_event_id_seq', 2, true);
 
 
 --
@@ -525,7 +534,7 @@ SELECT pg_catalog.setval('public.users_customuser_groups_id_seq', 1, false);
 -- Name: users_customuser_id_seq; Type: SEQUENCE SET; Schema: public; Owner: db_user
 --
 
-SELECT pg_catalog.setval('public.users_customuser_id_seq', 2, true);
+SELECT pg_catalog.setval('public.users_customuser_id_seq', 6, true);
 
 
 --
