@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import Login from "../components/Login.jsx";
 import { useNavigate } from "react-router";
 import { loginUser } from "../Auth_api.js";
 import "../css/Login.scss";
@@ -28,41 +29,11 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="login-container">
-      <form onSubmit={handleSubmit}>
-        <div className="mb-3">
-          <label htmlFor="email" className="form-label">
-            Email
-          </label>
-          <input
-            type="email"
-            id="email"
-            name="email"
-            className="form-control"
-            value={formData.email}
-            onChange={handleChange}
-            required
-          />
-        </div>
-        <div className="mb-3">
-          <label htmlFor="password" className="form-label">
-            Password
-          </label>
-          <input
-            type="password"
-            id="password"
-            name="password"
-            className="form-control"
-            value={formData.password}
-            onChange={handleChange}
-            required
-          />
-        </div>
-        {error && <div className="alert alert-danger">{error}</div>}
-        <button type="submit" className="btn btn-primary w-100">
-          Login
-        </button>
-      </form>
+    <div className="login-page">
+      <div className="login-container">
+        <h2 className="login-title">Login</h2>
+        <Login />
+      </div>
     </div>
   );
 };
