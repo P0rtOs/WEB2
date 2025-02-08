@@ -245,7 +245,8 @@ CREATE TABLE public.users_customuser (
     last_name character varying(30) NOT NULL,
     is_active boolean NOT NULL,
     is_staff boolean NOT NULL,
-    username character varying(150)
+    username character varying(150),
+    user_type character varying(20) NOT NULL
 );
 
 
@@ -378,6 +379,8 @@ COPY public.auth_permission (id, name, content_type_id, codename) FROM stdin;
 COPY public.django_admin_log (id, action_time, object_id, object_repr, action_flag, change_message, content_type_id, user_id) FROM stdin;
 1	2025-02-05 12:52:09.035266+00	1	ruinit' i fidit'	1	[{"added": {}}]	2	5
 2	2025-02-05 12:53:39.73101+00	2	nu ili v rarvel mivals	1	[{"added": {}}]	2	5
+3	2025-02-07 21:31:59.869406+00	1	123	1	[{"added": {}}]	5	5
+4	2025-02-07 21:32:26.347208+00	1	123	3		5	5
 \.
 
 
@@ -422,6 +425,7 @@ COPY public.django_migrations (id, app, name, applied) FROM stdin;
 19	events	0001_initial	2025-02-03 19:37:21.035688+00
 20	sessions	0001_initial	2025-02-03 19:37:21.041149+00
 21	users	0002_customuser_username	2025-02-03 21:48:51.442648+00
+22	users	0003_customuser_user_type	2025-02-07 18:10:10.801998+00
 \.
 
 
@@ -448,13 +452,13 @@ COPY public.events_event (id, title, description, date) FROM stdin;
 -- Data for Name: users_customuser; Type: TABLE DATA; Schema: public; Owner: db_user
 --
 
-COPY public.users_customuser (id, password, last_login, is_superuser, email, first_name, last_name, is_active, is_staff, username) FROM stdin;
-1	pbkdf2_sha256$870000$NvCe2UazhTRl6TccaXuXKV$i/eFTzEDjFwVDGg06E6G/IYRViFtIAkOhJJydGOcAC0=	\N	f	test@example.com			t	f	test
-2	pbkdf2_sha256$870000$4KoaYPWRHYrKDFAu2JaC94$mzNmefpKLvAPGxRbX6cPrhBls2byLmKj49kl1fTR+nA=	\N	f	te2s1t@example.com			t	f	te2s1t
-3	pbkdf2_sha256$870000$DaossHgWwArhAcoc8bkVnG$xnA698k1JlwacgNTzbSFXtrHl6ub9VtZJk8yx0T+/Sg=	2025-02-04 19:48:29.046227+00	f	asdas@gmail.com			t	f	asdas
-4	pbkdf2_sha256$870000$bmd5TyOltDWlWn5Ank7h5x$ociCEZjpxUBBOV4BBc/ZNEs/Pfh6nB3bNTtYf+ISP+s=	2025-02-04 20:01:15.851641+00	f	aboba@gmail.com			t	f	aboba
-5	pbkdf2_sha256$870000$wmUj9O1iqxNcwn2DaCyt1B$PXbcIhDandydZC8B1217QGBBfl28wKSed1LSQpRw+8Q=	2025-02-05 12:51:36.535939+00	t	admin@gmail.com			t	t	admin
-6	pbkdf2_sha256$870000$mrBcwTnsxaDkY4T7WOXswc$MLkA5aoX2NDfqvLQVOcUYmG2Kdafao5o99faLsIy5qc=	2025-02-05 13:36:42.44687+00	f	ivabobula136@gmail.com			t	f	ivabobula136
+COPY public.users_customuser (id, password, last_login, is_superuser, email, first_name, last_name, is_active, is_staff, username, user_type) FROM stdin;
+1	pbkdf2_sha256$870000$NvCe2UazhTRl6TccaXuXKV$i/eFTzEDjFwVDGg06E6G/IYRViFtIAkOhJJydGOcAC0=	\N	f	test@example.com			t	f	test	client
+2	pbkdf2_sha256$870000$4KoaYPWRHYrKDFAu2JaC94$mzNmefpKLvAPGxRbX6cPrhBls2byLmKj49kl1fTR+nA=	\N	f	te2s1t@example.com			t	f	te2s1t	client
+4	pbkdf2_sha256$870000$bmd5TyOltDWlWn5Ank7h5x$ociCEZjpxUBBOV4BBc/ZNEs/Pfh6nB3bNTtYf+ISP+s=	2025-02-04 20:01:15.851641+00	f	aboba@gmail.com			t	f	aboba	client
+5	pbkdf2_sha256$870000$wmUj9O1iqxNcwn2DaCyt1B$PXbcIhDandydZC8B1217QGBBfl28wKSed1LSQpRw+8Q=	2025-02-05 12:51:36.535939+00	t	admin@gmail.com			t	t	admin	client
+3	pbkdf2_sha256$870000$DaossHgWwArhAcoc8bkVnG$xnA698k1JlwacgNTzbSFXtrHl6ub9VtZJk8yx0T+/Sg=	2025-02-07 10:03:28.370155+00	f	asdas@gmail.com			t	f	asdas	client
+6	pbkdf2_sha256$870000$mrBcwTnsxaDkY4T7WOXswc$MLkA5aoX2NDfqvLQVOcUYmG2Kdafao5o99faLsIy5qc=	2025-02-07 21:36:02.993438+00	f	ivabobula136@gmail.com			t	f	ivabobula136	client
 \.
 
 
@@ -478,7 +482,7 @@ COPY public.users_customuser_user_permissions (id, customuser_id, permission_id)
 -- Name: auth_group_id_seq; Type: SEQUENCE SET; Schema: public; Owner: db_user
 --
 
-SELECT pg_catalog.setval('public.auth_group_id_seq', 1, false);
+SELECT pg_catalog.setval('public.auth_group_id_seq', 1, true);
 
 
 --
@@ -499,7 +503,7 @@ SELECT pg_catalog.setval('public.auth_permission_id_seq', 28, true);
 -- Name: django_admin_log_id_seq; Type: SEQUENCE SET; Schema: public; Owner: db_user
 --
 
-SELECT pg_catalog.setval('public.django_admin_log_id_seq', 2, true);
+SELECT pg_catalog.setval('public.django_admin_log_id_seq', 4, true);
 
 
 --
@@ -513,7 +517,7 @@ SELECT pg_catalog.setval('public.django_content_type_id_seq', 7, true);
 -- Name: django_migrations_id_seq; Type: SEQUENCE SET; Schema: public; Owner: db_user
 --
 
-SELECT pg_catalog.setval('public.django_migrations_id_seq', 21, true);
+SELECT pg_catalog.setval('public.django_migrations_id_seq', 22, true);
 
 
 --
