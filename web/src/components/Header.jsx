@@ -62,6 +62,15 @@ const Header = () => {
                                 Login
                             </Link>
                         </li>
+                        <li className="nav-item">
+                            <Link
+                                className="nav-link"
+                                to="/test"
+                                style={{ fontSize: "1.2rem" }}
+                            >
+                                Test
+                            </Link>
+                        </li>
                     </ul>
                 </div>
             </div>

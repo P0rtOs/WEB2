@@ -89,7 +89,9 @@ DJOSER = {
     "SERIALIZERS": {
         "user_create": "model.users.serializers.CustomUserCreateSerializer",
         "user": "model.users.serializers.CustomUserSerializer",
+        "current_user": "model.users.serializers.CustomUserSerializer",
     },
+    "USER_EDITABLE_FIELDS": ["user_type"]
 }
 
 
@@ -174,17 +176,15 @@ sys.path.append(controller_path)
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
-    ),
-    
+    ),    
 }
 
 SIMPLE_JWT = {
     'AUTH_HEADER_TYPES': ('Bearer',),
     'AUTH_HEADER_TYPES': ('JWT',),
     'UPDATE_LAST_LOGIN': True, 
-    'ACCESS_TOKEN_LIFETIME': timedelta(seconds=10),
-    'REFRESH_TOKEN_LIFETIME': timedelta(minutes=20),
+    'ACCESS_TOKEN_LIFETIME': timedelta(seconds=10000),
+    'REFRESH_TOKEN_LIFETIME': timedelta(minutes=200),
 }
 
 AUTHENTICATION_BACKENDS = (

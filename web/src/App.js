@@ -5,6 +5,7 @@ import Events from "./pages/EventsPage.jsx";
 import Profile from "./pages/ProfilePage.jsx";
 import Registration from "./pages/RegistrationPage.jsx";
 import Login from "./pages/LoginPage.jsx";
+import Test from "./pages/TestPage.jsx";
 import "./css/Main.scss";
 
 function App() {
@@ -16,6 +17,7 @@ function App() {
                 <Route path="/profile" element={<Profile />} />
                 <Route path="/register" element={<Registration />} />
                 <Route path="/login" element={<Login />} />
+                <Route path="/test" element={<Test />} />
             </Routes>
         </Router>
     );

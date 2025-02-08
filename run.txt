@@ -23,7 +23,7 @@ python manage.py runserver
 
 
 
-
+venv/scripts/activate
 venv\Scripts\activate.bat
 python manage.py migrate
 python manage.py runserver
