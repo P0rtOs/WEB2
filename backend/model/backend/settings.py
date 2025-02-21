@@ -39,14 +39,23 @@ INSTALLED_APPS = [
     'controller',
     'model.events',
     'rest_framework',
+    'rest_framework.authtoken',
     'djoser',
     'rest_framework_simplejwt',
     'django.contrib.admin',
     'django.contrib.auth',
+    'django.contrib.sites',  # Required by allauth
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.google',
+    'dj_rest_auth',
+    'dj_rest_auth.registration',
     'corsheaders',
 ]
 
@@ -59,6 +68,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'corsheaders.middleware.CorsMiddleware',
+    'allauth.account.middleware.AccountMiddleware'
 ]
 
 CORS_ALLOW_ALL_ORIGINS = True 
@@ -82,6 +92,11 @@ TEMPLATES = [
 ]
 
 AUTH_USER_MODEL = "users.CustomUser"
+
+SITE_ID = 1
+
+# Tell dj-rest-auth to use JWT tokens instead of a session.
+REST_USE_JWT = True
 
 DJOSER = {
     "LOGIN_FIELD": "login",
@@ -189,3 +204,18 @@ SIMPLE_JWT = {
 AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
 )
+
+# Configure the Google provider for allauth:
+SOCIALACCOUNT_PROVIDERS = {
+    'google': {
+        'SCOPE': [
+            'profile',
+            'email',
+        ],
+        'AUTH_PARAMS': {
+            'access_type': 'offline',  # or 'offline' if you need a refresh token
+        },
+        # Optional: if you want to enable PKCE for SPAs:
+        'OAUTH_PKCE_ENABLED': True,
+    }
+}
