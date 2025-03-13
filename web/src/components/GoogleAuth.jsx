@@ -12,12 +12,9 @@ const GoogleAuth = ({ onLoginSuccess }) => {
     try {
       // Send the Google id_token to your backend social login endpoint.
       // Adjust the URL according to your configuration.
-      const response = await axios.post(
-        "http://127.0.0.1:8000/dj-rest-auth/google/",
-        {
-          access_token: idToken,
-        }
-      );
+      const response = await axios.post("http://127.0.0.1:8000/auth/google/", {
+        token: idToken,
+      });
 
       console.log("Backend social login response:", response.data);
       // onLoginSuccess is a callback to update your authentication state.
