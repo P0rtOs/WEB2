@@ -39,18 +39,29 @@ INSTALLED_APPS = [
     'controller',
     'model.events',
     'rest_framework',
+    'rest_framework.authtoken',
     'djoser',
     'rest_framework_simplejwt',
+    'rest_framework_simplejwt.token_blacklist',  # Add it to avoid problems with migrations
+    'social_django',
     'django.contrib.admin',
     'django.contrib.auth',
+    'django.contrib.sites',  # Required by allauth
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.google',
+    'dj_rest_auth',
+    'dj_rest_auth.registration',
     'corsheaders',
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -58,7 +69,9 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
+        
+    'allauth.account.middleware.AccountMiddleware',
+    'social_django.middleware.SocialAuthExceptionMiddleware',
 ]
 
 CORS_ALLOW_ALL_ORIGINS = True 
@@ -76,12 +89,23 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                 # Essential !!
+                'social_django.context_processors.backends',
+                'social_django.context_processors.login_redirect',
+
             ],
         },
     },
 ]
 
 AUTH_USER_MODEL = "users.CustomUser"
+
+SITE_ID = 1
+
+# Tell dj-rest-auth to use JWT tokens instead of a session.
+REST_USE_JWT = True
+
+white_list = ['http://localhost:8000/accounts/profile'] # URL you add to google developers console as allowed to make redirection
 
 DJOSER = {
     "LOGIN_FIELD": "login",
@@ -91,6 +115,7 @@ DJOSER = {
         "user": "model.users.serializers.CustomUserSerializer",
         "current_user": "model.users.serializers.CustomUserSerializer",
     },
+    'SOCIAL_AUTH_ALLOWED_REDIRECT_URIS': white_list, # Redirected URL we listen on google console
     "USER_EDITABLE_FIELDS": ["user_type"]
 }
 
@@ -175,8 +200,12 @@ sys.path.append(controller_path)
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
+        #'rest_framework.authentication.SessionAuthentication',
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),    
+    # 'DEFAULT_PERMISSION_CLASSES': (
+    #     'rest_framework.permissions.IsAuthenticated',
+    # ),
 }
 
 SIMPLE_JWT = {
@@ -187,5 +216,31 @@ SIMPLE_JWT = {
 }
 
 AUTHENTICATION_BACKENDS = (
+    'social_core.backends.google.GoogleOAuth2',
     'django.contrib.auth.backends.ModelBackend',
 )
+
+# Configure the Google provider for allauth:
+SOCIALACCOUNT_PROVIDERS = {
+    'google': {
+        'SCOPE': [
+            'profile',
+            'email',
+        ],
+        'AUTH_PARAMS': {
+            'access_type': 'offline',  # or 'offline' if you need a refresh token
+        },
+        # Optional: if you want to enable PKCE for SPAs:
+        'OAUTH_PKCE_ENABLED': True,
+    }
+}
+
+SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = '817510836740-kgfhlmoi87nt26r5i7rutjd64pisi1ei.apps.googleusercontent.com'
+
+SOCIAL_AUTH_RAISE_EXCEPTIONS = False
+
+# Зазначте, які дані хочете отримувати
+SOCIAL_AUTH_GOOGLE_OAUTH2_SCOPE = [
+    'https://www.googleapis.com/auth/userinfo.email',
+    'https://www.googleapis.com/auth/userinfo.profile',
+]

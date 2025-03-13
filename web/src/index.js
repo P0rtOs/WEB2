@@ -2,9 +2,18 @@ import "bootstrap/dist/css/bootstrap.min.css";
 
 import React from "react";
 import ReactDOM from "react-dom/client";
-import { Provider } from 'react-redux';
-import store from './redux/store';
 import App from "./App";
 
+import { GoogleOAuthProvider } from "@react-oauth/google";
+
+const GOOGLE_CLIENT_ID =
+  "817510836740-kgfhlmoi87nt26r5i7rutjd64pisi1ei.apps.googleusercontent.com";
+
 const root = ReactDOM.createRoot(document.getElementById("root"));
-root.render(<Provider store={store}><App /></Provider>);
+root.render(
+  <React.StrictMode>
+    <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
+      <App />
+    </GoogleOAuthProvider>
+  </React.StrictMode>
+);
