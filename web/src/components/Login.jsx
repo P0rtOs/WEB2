@@ -1,8 +1,12 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router";
-import { loginUser } from "../Auth_api.js";
+import { loginUser, getUserType } from "../Auth_api.js";
 import GoogleAuth from "./GoogleAuth.jsx";
+import { setUserRole } from "../features/authSlice"; // Импортируем экшен
 import "../css/Login.scss";
+
+import { useNavigate } from "react-router";
+import { useDispatch } from "react-redux";
 
 const LoginPage = () => {
   const [formData, setFormData] = useState({
@@ -11,16 +15,19 @@ const LoginPage = () => {
   });
   const [error, setError] = useState("");
   const navigate = useNavigate();
+  const dispatch = useDispatch(); // Инициализируем dispatch
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSocialLoginSuccess = (data) => {
+  const handleSocialLoginSuccess = async (data) => {
     // Example: Save JWT tokens in localStorage
     localStorage.setItem("accessToken", data.access);
     localStorage.setItem("refreshToken", data.refresh);
-    // Redirect or update your application state as needed.
+    const role = await getUserType();
+    // Сохраняем роль в Redux Store
+    dispatch(setUserRole(role));
     window.location.href = "/";
   };
 
@@ -30,6 +37,8 @@ const LoginPage = () => {
 
     try {
       await loginUser(formData.email, formData.password);
+      const role = await getUserType();
+      dispatch(setUserRole(role));
       navigate("/");
     } catch (err) {
       setError(err.message);
