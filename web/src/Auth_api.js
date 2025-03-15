@@ -15,9 +15,6 @@ const apiAuth = axios.create({
 // Инстанс для событий
 const apiEvents = axios.create({
   baseURL: API_EVENTS_URL,
-  headers: {
-    "Content-Type": "application/json",
-  },
 });
 
 // Функция установки заголовка авторизации для обоих инстансов
@@ -148,9 +145,7 @@ export const googleLogin = async (idToken) => {
 
 // Создание нового события (multipart/form-data)
 export const createEvent = async (eventData) => {
-  const response = await apiEvents.post("/", eventData, {
-    headers: { "Content-Type": "multipart/form-data" },
-  });
+  const response = await apiEvents.post("/", eventData);
   return response.data;
 };
 

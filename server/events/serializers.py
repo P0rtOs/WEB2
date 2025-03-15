@@ -2,13 +2,32 @@ import json
 from rest_framework import serializers
 from .models import Event, TicketTier
 
+import json
+from rest_framework import serializers
+from .models import Event, TicketTier
+
 class TicketTierSerializer(serializers.ModelSerializer):
     class Meta:
         model = TicketTier
         fields = ('id', 'title', 'description', 'price')
 
+class TicketTierJSONField(serializers.Field):
+    def to_internal_value(self, data):
+        # Если получаем строку, пытаемся распарсить JSON
+        if isinstance(data, str):
+            try:
+                return json.loads(data)
+            except Exception:
+                raise serializers.ValidationError("Invalid JSON format for ticket_tiers.")
+        return data
+
+    def to_representation(self, value):
+        # value — это связанный менеджер (queryset), сериализуем его стандартным способом
+        return TicketTierSerializer(value, many=True).data
+
 class EventSerializer(serializers.ModelSerializer):
-    ticket_tiers = TicketTierSerializer(many=True, required=False)
+    # Используем наше кастомное поле вместо TicketTierSerializer напрямую
+    ticket_tiers = TicketTierJSONField(required=False)
 
     class Meta:
         model = Event
@@ -16,12 +35,6 @@ class EventSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         tiers_data = validated_data.pop('ticket_tiers', [])
-        # Если tiers_data передается как строка (JSON), попробуем распарсить
-        if isinstance(tiers_data, str):
-            try:
-                tiers_data = json.loads(tiers_data)
-            except Exception:
-                tiers_data = []
         event = Event.objects.create(**validated_data)
         for tier in tiers_data:
             TicketTier.objects.create(event=event, **tier)

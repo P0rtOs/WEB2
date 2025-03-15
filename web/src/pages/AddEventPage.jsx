@@ -77,6 +77,8 @@ const AddEventPage = () => {
     // Добавляем тиров билетов как JSON-строку
     data.append("ticket_tiers", JSON.stringify(ticketTiers));
 
+    console.log(data);
+
     try {
       await createEvent(data);
       setSuccess("Подію створено успішно!");
