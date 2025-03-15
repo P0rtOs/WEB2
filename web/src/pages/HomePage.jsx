@@ -4,17 +4,16 @@ import { Container, Button, Typography, Grid } from "@mui/material";
 import { useSelector } from "react-redux";
 import Header from "../components/Header";
 import EventCard from "../components/EventCard";
-import { api } from "../Auth_api.js";
+import { apiEvents } from "../Auth_api.js";
 
 const HomePage = () => {
   const { role } = useSelector((state) => state.auth);
   const [events, setEvents] = useState([]);
 
   useEffect(() => {
-    // Получаем список событий с бэкенда
     const fetchEvents = async () => {
       try {
-        const response = await api.get("/events/");
+        const response = await apiEvents.get("/");
         setEvents(response.data);
       } catch (err) {
         console.error("Error fetching events:", err);

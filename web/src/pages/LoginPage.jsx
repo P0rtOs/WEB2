@@ -6,8 +6,8 @@ import "../css/Login.scss";
 
 const LoginPage = () => {
   const [formData, setFormData] = useState({
-    email: "ivabobula136@gmail.com",
-    password: "Hatsune_Miku",
+    email: "ivabobul1966@gmail.com",
+    password: "HatsuneMiku",
   });
   const [error, setError] = useState("");
   const navigate = useNavigate();

@@ -10,7 +10,7 @@ import {
   Grid,
 } from "@mui/material";
 import { useParams } from "react-router";
-import { api } from "../Auth_api.js";
+import { apiEvents } from "../Auth_api.js";
 
 const EventDetailPage = () => {
   const { id } = useParams();
@@ -19,7 +19,8 @@ const EventDetailPage = () => {
   useEffect(() => {
     const fetchEvent = async () => {
       try {
-        const response = await api.get(`/events/${id}/`);
+        // Так как базовый URL уже указывает на /api/events, достаточно указать "/<id>/"
+        const response = await apiEvents.get(`/${id}/`);
         setEvent(response.data);
       } catch (err) {
         console.error("Error fetching event:", err);
