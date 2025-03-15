@@ -30,11 +30,13 @@ const LoginPage = () => {
 
   return (
     <div className="login-page">
-      <div className="login-container">
-        <h2 className="login-title">Login</h2>
-        <Login />
-      </div>
+      <Login />
     </div>
+    // <div className="login-page">
+    //   <div className="login-container">
+
+    //   </div>
+    // </div>
   );
 };
 

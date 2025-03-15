@@ -1,34 +1,64 @@
-import React from "react";
-import { Container, Row, Col, Button } from "react-bootstrap";
-import Header from "../components/Header.jsx";
-import EventList from "../components/EventList.jsx";
+// C:/Users/Fr0ndeur/Desktop/3_year_2_semestr/WEB2/web/src/pages/HomePage.jsx
+import React, { useEffect, useState } from "react";
+import { Container, Button, Typography, Grid } from "@mui/material";
+import { useSelector } from "react-redux";
+import Header from "../components/Header";
+import EventCard from "../components/EventCard";
+import { api } from "../Auth_api.js";
 
 const HomePage = () => {
-    return (
-        <>
-            <Header /> {}
-            <Container className="text-center my-5">
-                <Row>
-                    <Col>
-                        <h1>
-                            Ласкаво просимо до платформи для управління подіями!
-                        </h1>
-                        <p>
-                            Тут ви можете створювати події, керувати ними та
-                            брати участь у найкращих заходах.
-                        </p>
-                        <Button variant="primary" href="/register">
-                            Зареєструватися
-                        </Button>{" "}
-                        <Button variant="secondary" href="/events">
-                            Переглянути події
-                        </Button>
-                    </Col>
-                </Row>
-                <EventList />
-            </Container>
-        </>
-    );
+  const { role } = useSelector((state) => state.auth);
+  const [events, setEvents] = useState([]);
+
+  useEffect(() => {
+    // Получаем список событий с бэкенда
+    const fetchEvents = async () => {
+      try {
+        const response = await api.get("/events/");
+        setEvents(response.data);
+      } catch (err) {
+        console.error("Error fetching events:", err);
+      }
+    };
+    fetchEvents();
+  }, []);
+
+  return (
+    <>
+      <Header />
+      <Container sx={{ mt: 4 }}>
+        <Typography variant="h3" align="center" gutterBottom>
+          Ласкаво просимо до платформи для управління подіями!
+        </Typography>
+        <Grid container justifyContent="center" spacing={2} sx={{ mb: 4 }}>
+          <Grid item>
+            <Button variant="contained" href="/register">
+              Зареєструватися
+            </Button>
+          </Grid>
+          <Grid item>
+            <Button variant="outlined" href="/events">
+              Переглянути події
+            </Button>
+          </Grid>
+          {role === "organizer" && (
+            <Grid item>
+              <Button variant="contained" color="success" href="/add-event">
+                Додати подію
+              </Button>
+            </Grid>
+          )}
+        </Grid>
+        <Grid container spacing={2} justifyContent="center">
+          {events.map((event) => (
+            <Grid item key={event.id}>
+              <EventCard event={event} />
+            </Grid>
+          ))}
+        </Grid>
+      </Container>
+    </>
+  );
 };
 
 export default HomePage;

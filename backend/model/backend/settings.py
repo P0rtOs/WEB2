@@ -33,7 +33,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
-    'model.users',
+    'model.users.apps.UsersConfig',
     'django_extensions',
     'model.backend',
     'controller',

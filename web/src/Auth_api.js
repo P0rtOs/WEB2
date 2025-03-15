@@ -190,5 +190,14 @@ export const googleLogin = async (idToken) => {
   }
 };
 
+export const createEvent = async (eventData) => {
+  // eventData должен быть объектом FormData,
+  // так как мы отправляем данные в формате multipart/form-data.
+  const response = await api.post("/events/", eventData, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+  return response.data;
+};
+
 // Export the axios instance if needed.
 export { api };

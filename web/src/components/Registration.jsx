@@ -1,13 +1,22 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router';
-import { registerUser } from '../Auth_api.js';
+// src/components/Registration.jsx
+import React, { useState } from "react";
+import { useNavigate } from "react-router";
+import { registerUser } from "../Auth_api.js";
+import {
+  Container,
+  Box,
+  TextField,
+  Button,
+  Typography,
+  Alert,
+} from "@mui/material";
 
 const Registration = () => {
   const [formData, setFormData] = useState({
-    email: '',
-    password: '',
+    email: "",
+    password: "",
   });
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -16,8 +25,7 @@ const Registration = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
-
+    setError("");
     try {
       await registerUser(formData.email, formData.password, navigate);
     } catch (err) {
@@ -26,42 +34,43 @@ const Registration = () => {
   };
 
   return (
-    <div className='regist-container'>
-      <form onSubmit={handleSubmit}>
-        <div className='mb-3'>
-          <label htmlFor='email' className='form-label'>
-            Email
-          </label>
-          <input
-            type='email'
-            id='email'
-            name='email'
-            className='form-control'
+    <Container maxWidth="sm">
+      <Box sx={{ mt: 8, p: 4, boxShadow: 3, borderRadius: 2 }}>
+        <Typography variant="h4" align="center" gutterBottom>
+          Registration
+        </Typography>
+        <form onSubmit={handleSubmit}>
+          <TextField
+            label="Email"
+            name="email"
+            type="email"
+            fullWidth
+            margin="normal"
             value={formData.email}
             onChange={handleChange}
             required
           />
-        </div>
-        <div className='mb-3'>
-          <label htmlFor='password' className='form-label'>
-            Password
-          </label>
-          <input
-            type='password'
-            id='password'
-            name='password'
-            className='form-control'
+          <TextField
+            label="Password"
+            name="password"
+            type="password"
+            fullWidth
+            margin="normal"
             value={formData.password}
             onChange={handleChange}
             required
           />
-        </div>
-        {error && <div className='alert alert-danger'>{error}</div>}
-        <button type='submit' className='btn btn-primary w-100'>
-          Registrate
-        </button>
-      </form>
-    </div>
+          {error && (
+            <Alert severity="error" sx={{ mt: 2 }}>
+              {error}
+            </Alert>
+          )}
+          <Button type="submit" variant="contained" fullWidth sx={{ mt: 3 }}>
+            Register
+          </Button>
+        </form>
+      </Box>
+    </Container>
   );
 };
 
