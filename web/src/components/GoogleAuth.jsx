@@ -22,7 +22,7 @@ const GoogleAuth = ({ onLoginSuccess }) => {
   };
 
   return (
-    <div>
+    <div className="google-auth-button">
       <GoogleLogin onSuccess={handleSuccess} onError={handleError} />
     </div>
   );
