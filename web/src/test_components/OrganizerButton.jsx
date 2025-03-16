@@ -9,7 +9,7 @@ const OrganizerButton = () => {
   const dispatch = useDispatch();
 
   // Отримуємо тип користувача з Redux store
-  const userRole = useSelector((state) => state.auth.role);
+  const currentUser = useSelector((state) => state.auth.currentUser);
 
   // Якщо тип користувача ще не завантажено, спробуємо його завантажити
   // useEffect(async () => {
@@ -30,7 +30,7 @@ const OrganizerButton = () => {
     }
   };
 
-  return userRole === "client" ? (
+  return currentUser.user_type === "client" ? (
     <div>
       <button onClick={handleBecomeOrganizer} className="btn btn-success">
         Become Organizer

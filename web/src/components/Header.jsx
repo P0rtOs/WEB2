@@ -1,8 +1,12 @@
+// C:/Users/Fr0ndeur/Desktop/3_year_2_semestr/WEB2/web/src/components/Header.jsx
 import React from "react";
 import { Link } from "react-router";
+import { useSelector } from "react-redux";
 import "../css/Header.scss";
 
 const Header = () => {
+  const currentUser = useSelector((state) => state.auth.currentUser);
+
   return (
     <header className="navbar navbar-expand-lg navbar-light bg-light">
       <div className="container">
@@ -45,6 +49,30 @@ const Header = () => {
                 About
               </Link>
             </li>
+            {currentUser && currentUser.is_staff && (
+              <li className="nav-item">
+                <Link
+                  className="nav-link"
+                  to="/analytics/admin"
+                  style={{ fontSize: "1.2rem" }}
+                >
+                  Admin Analytics
+                </Link>
+              </li>
+            )}
+            {currentUser &&
+              currentUser.user_type === "organizer" &&
+              !currentUser.is_staff && (
+                <li className="nav-item">
+                  <Link
+                    className="nav-link"
+                    to="/analytics/organizer"
+                    style={{ fontSize: "1.2rem" }}
+                  >
+                    Organizer Analytics
+                  </Link>
+                </li>
+              )}
             <li className="nav-item">
               <Link
                 className="nav-link"

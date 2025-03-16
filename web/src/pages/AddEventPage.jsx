@@ -1,93 +1,135 @@
-// C:/Users/Fr0ndeur/Desktop/3_year_2_semestr/WEB2/web/src/pages/AddEventPage.jsx
 import React, { useState } from "react";
 import {
   Container,
+  Box,
   TextField,
   Button,
   Typography,
-  Box,
-  Alert,
-  IconButton,
   Card,
   CardContent,
   CardActions,
+  Alert,
 } from "@mui/material";
-import { useSelector } from "react-redux";
-import { useNavigate } from "react-router";
-import { createEvent } from "../Auth_api.js";
 import DeleteIcon from "@mui/icons-material/Delete";
+import { useNavigate } from "react-router";
+import { createEvent } from "../Auth_api";
 
-const AddEventPage = () => {
-  const userRole = useSelector((state) => state.auth.role);
+const EventCreationForm = () => {
   const navigate = useNavigate();
-
-  const [formData, setFormData] = useState({
+  const [eventForm, setEventForm] = useState({
     title: "",
     description: "",
+    location: "",
     start_date: "",
     end_date: "",
   });
-  const [ticketTiers, setTicketTiers] = useState([]);
   const [image, setImage] = useState(null);
+  const [ticketTiers, setTicketTiers] = useState([]);
+  const [speakers, setSpeakers] = useState([]);
+  const [sponsors, setSponsors] = useState([]);
+  const [programItems, setProgramItems] = useState([]);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-  if (userRole === null) return <div>Загрузка...</div>;
-  if (userRole !== "organizer")
-    return (
-      <Alert severity="error">
-        Доступ заборонено: лише організатор може створювати події.
-      </Alert>
-    );
-
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+  // Обработчик для базовых полей события
+  const handleEventFormChange = (e) => {
+    setEventForm({ ...eventForm, [e.target.name]: e.target.value });
   };
 
   const handleImageChange = (e) => {
     setImage(e.target.files[0]);
   };
 
-  const handleAddTicketTier = () => {
-    setTicketTiers([...ticketTiers, { title: "", description: "", price: "" }]);
+  // Динамические списки для Ticket Tiers
+  const addTicketTier = () => {
+    setTicketTiers([
+      ...ticketTiers,
+      { title: "", description: "", price: "", ticket_type: "paid" },
+    ]);
   };
-
-  const handleTicketTierChange = (index, field, value) => {
+  const updateTicketTier = (index, field, value) => {
     const newTiers = [...ticketTiers];
     newTiers[index][field] = value;
     setTicketTiers(newTiers);
   };
-
-  const handleRemoveTicketTier = (index) => {
+  const removeTicketTier = (index) => {
     const newTiers = [...ticketTiers];
     newTiers.splice(index, 1);
     setTicketTiers(newTiers);
   };
 
+  // Динамический список для Speakers
+  const addSpeaker = () => {
+    setSpeakers([...speakers, { name: "", bio: "" }]);
+  };
+  const updateSpeaker = (index, field, value) => {
+    const newSpeakers = [...speakers];
+    newSpeakers[index][field] = value;
+    setSpeakers(newSpeakers);
+  };
+  const removeSpeaker = (index) => {
+    const newSpeakers = [...speakers];
+    newSpeakers.splice(index, 1);
+    setSpeakers(newSpeakers);
+  };
+
+  // Динамический список для Sponsors
+  const addSponsor = () => {
+    setSponsors([...sponsors, { name: "", website: "" }]);
+  };
+  const updateSponsor = (index, field, value) => {
+    const newSponsors = [...sponsors];
+    newSponsors[index][field] = value;
+    setSponsors(newSponsors);
+  };
+  const removeSponsor = (index) => {
+    const newSponsors = [...sponsors];
+    newSponsors.splice(index, 1);
+    setSponsors(newSponsors);
+  };
+
+  // Динамический список для Program Items
+  const addProgramItem = () => {
+    setProgramItems([
+      ...programItems,
+      { title: "", description: "", start_time: "", end_time: "" },
+    ]);
+  };
+  const updateProgramItem = (index, field, value) => {
+    const newProgramItems = [...programItems];
+    newProgramItems[index][field] = value;
+    setProgramItems(newProgramItems);
+  };
+  const removeProgramItem = (index) => {
+    const newProgramItems = [...programItems];
+    newProgramItems.splice(index, 1);
+    setProgramItems(newProgramItems);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
-    // Собираем данные в FormData, чтобы отправить файл
+    // Собираем данные в FormData
     const data = new FormData();
-    data.append("title", formData.title);
-    data.append("description", formData.description);
-    data.append("start_date", formData.start_date);
-    data.append("end_date", formData.end_date);
+    data.append("title", eventForm.title);
+    data.append("description", eventForm.description);
+    data.append("location", eventForm.location);
+    data.append("start_date", eventForm.start_date);
+    data.append("end_date", eventForm.end_date);
     if (image) data.append("image", image);
-    // Добавляем тиров билетов как JSON-строку
+    // Сериализуем вложенные массивы
     data.append("ticket_tiers", JSON.stringify(ticketTiers));
-
-    console.log(data);
+    data.append("speakers", JSON.stringify(speakers));
+    data.append("sponsors", JSON.stringify(sponsors));
+    data.append("program_items", JSON.stringify(programItems));
 
     try {
       await createEvent(data);
-      setSuccess("Подію створено успішно!");
+      setSuccess("Event created successfully!");
       setTimeout(() => navigate("/events"), 2000);
     } catch (err) {
       setError(
-        err.response?.data?.detail ||
-          err.message ||
-          "Сталася помилка при створенні події."
+        err.response?.data?.detail || err.message || "Error creating event."
       );
     }
   };
@@ -96,54 +138,64 @@ const AddEventPage = () => {
     <Container maxWidth="md" sx={{ mt: 4 }}>
       <Box sx={{ p: 4, boxShadow: 3, borderRadius: 2 }}>
         <Typography variant="h4" align="center" gutterBottom>
-          Створити нову подію
+          Create Event
         </Typography>
         <form onSubmit={handleSubmit} encType="multipart/form-data">
+          {/* Основные поля */}
           <TextField
-            label="Назва події"
+            label="Title"
             name="title"
             fullWidth
             margin="normal"
-            value={formData.title}
-            onChange={handleChange}
+            value={eventForm.title}
+            onChange={handleEventFormChange}
             required
           />
           <TextField
-            label="Опис події"
+            label="Description"
             name="description"
             fullWidth
             margin="normal"
             multiline
             rows={4}
-            value={formData.description}
-            onChange={handleChange}
+            value={eventForm.description}
+            onChange={handleEventFormChange}
             required
           />
           <TextField
-            label="Дата початку"
+            label="Location"
+            name="location"
+            fullWidth
+            margin="normal"
+            value={eventForm.location}
+            onChange={handleEventFormChange}
+            required
+          />
+          <TextField
+            label="Start Date"
             name="start_date"
             type="datetime-local"
             fullWidth
             margin="normal"
             InputLabelProps={{ shrink: true }}
-            value={formData.start_date}
-            onChange={handleChange}
+            value={eventForm.start_date}
+            onChange={handleEventFormChange}
             required
           />
           <TextField
-            label="Дата завершення (необов'язково)"
+            label="End Date"
             name="end_date"
             type="datetime-local"
             fullWidth
             margin="normal"
             InputLabelProps={{ shrink: true }}
-            value={formData.end_date}
-            onChange={handleChange}
+            value={eventForm.end_date}
+            onChange={handleEventFormChange}
           />
           <Box sx={{ mt: 2 }}>
-            <Typography variant="subtitle1">Завантажити зображення</Typography>
+            <Typography variant="subtitle1">Upload Image</Typography>
             <Button variant="contained" component="label">
-              Обрати файл
+              Choose File
               <input
                 type="file"
                 hidden
@@ -151,63 +203,220 @@ const AddEventPage = () => {
                 onChange={handleImageChange}
               />
             </Button>
-            {image && <Typography sx={{ mt: 1 }}>{image.name}</Typography>}
           </Box>
 
+          {/* Ticket Tiers */}
           <Box sx={{ mt: 4 }}>
-            <Typography variant="h6">Тири квитків</Typography>
+            <Typography variant="h6">Ticket Tiers</Typography>
             {ticketTiers.map((tier, index) => (
               <Card key={index} sx={{ my: 2, p: 2 }}>
                 <CardContent>
                   <TextField
-                    label="Назва тиру"
+                    label="Tier Title"
                     fullWidth
                     margin="normal"
                     value={tier.title}
                     onChange={(e) =>
-                      handleTicketTierChange(index, "title", e.target.value)
+                      updateTicketTier(index, "title", e.target.value)
                     }
                     required
                   />
                   <TextField
-                    label="Опис тиру"
+                    label="Tier Description"
                     fullWidth
                     margin="normal"
                     multiline
                     rows={2}
                     value={tier.description}
                     onChange={(e) =>
-                      handleTicketTierChange(
-                        index,
-                        "description",
-                        e.target.value
-                      )
+                      updateTicketTier(index, "description", e.target.value)
                     }
                   />
                   <TextField
-                    label="Ціна"
+                    label="Price"
                     fullWidth
                     margin="normal"
                     type="number"
                     value={tier.price}
                     onChange={(e) =>
-                      handleTicketTierChange(index, "price", e.target.value)
+                      updateTicketTier(index, "price", e.target.value)
+                    }
+                    required
+                  />
+                  <TextField
+                    label="Ticket Type"
+                    fullWidth
+                    margin="normal"
+                    value={tier.ticket_type}
+                    onChange={(e) =>
+                      updateTicketTier(index, "ticket_type", e.target.value)
                     }
                     required
                   />
                 </CardContent>
                 <CardActions>
-                  <IconButton
+                  <Button
+                    variant="outlined"
                     color="error"
-                    onClick={() => handleRemoveTicketTier(index)}
+                    onClick={() => removeTicketTier(index)}
                   >
-                    <DeleteIcon />
-                  </IconButton>
+                    Remove Tier
+                  </Button>
                 </CardActions>
               </Card>
             ))}
-            <Button variant="outlined" onClick={handleAddTicketTier}>
-              Додати тиру квитків
+            <Button variant="outlined" onClick={addTicketTier}>
+              Add Ticket Tier
+            </Button>
+          </Box>
+
+          {/* Speakers */}
+          <Box sx={{ mt: 4 }}>
+            <Typography variant="h6">Speakers</Typography>
+            {speakers.map((speaker, index) => (
+              <Card key={index} sx={{ my: 2, p: 2 }}>
+                <CardContent>
+                  <TextField
+                    label="Speaker Name"
+                    fullWidth
+                    margin="normal"
+                    value={speaker.name}
+                    onChange={(e) =>
+                      updateSpeaker(index, "name", e.target.value)
+                    }
+                    required
+                  />
+                  <TextField
+                    label="Bio"
+                    fullWidth
+                    margin="normal"
+                    multiline
+                    rows={2}
+                    value={speaker.bio}
+                    onChange={(e) =>
+                      updateSpeaker(index, "bio", e.target.value)
+                    }
+                  />
+                </CardContent>
+                <CardActions>
+                  <Button
+                    variant="outlined"
+                    color="error"
+                    onClick={() => removeSpeaker(index)}
+                  >
+                    Remove Speaker
+                  </Button>
+                </CardActions>
+              </Card>
+            ))}
+            <Button variant="outlined" onClick={addSpeaker}>
+              Add Speaker
+            </Button>
+          </Box>
+
+          {/* Sponsors */}
+          <Box sx={{ mt: 4 }}>
+            <Typography variant="h6">Sponsors</Typography>
+            {sponsors.map((sponsor, index) => (
+              <Card key={index} sx={{ my: 2, p: 2 }}>
+                <CardContent>
+                  <TextField
+                    label="Sponsor Name"
+                    fullWidth
+                    margin="normal"
+                    value={sponsor.name}
+                    onChange={(e) =>
+                      updateSponsor(index, "name", e.target.value)
+                    }
+                    required
+                  />
+                  <TextField
+                    label="Website"
+                    fullWidth
+                    margin="normal"
+                    value={sponsor.website}
+                    onChange={(e) =>
+                      updateSponsor(index, "website", e.target.value)
+                    }
+                  />
+                </CardContent>
+                <CardActions>
+                  <Button
+                    variant="outlined"
+                    color="error"
+                    onClick={() => removeSponsor(index)}
+                  >
+                    Remove Sponsor
+                  </Button>
+                </CardActions>
+              </Card>
+            ))}
+            <Button variant="outlined" onClick={addSponsor}>
+              Add Sponsor
+            </Button>
+          </Box>
+
+          {/* Program Items */}
+          <Box sx={{ mt: 4 }}>
+            <Typography variant="h6">Program Items</Typography>
+            {programItems.map((item, index) => (
+              <Card key={index} sx={{ my: 2, p: 2 }}>
+                <CardContent>
+                  <TextField
+                    label="Program Title"
+                    fullWidth
+                    margin="normal"
+                    value={item.title}
+                    onChange={(e) =>
+                      updateProgramItem(index, "title", e.target.value)
+                    }
+                    required
+                  />
+                  <TextField
+                    label="Description"
+                    fullWidth
+                    margin="normal"
+                    multiline
+                    rows={2}
+                    value={item.description}
+                    onChange={(e) =>
+                      updateProgramItem(index, "description", e.target.value)
+                    }
+                  />
+                  <TextField
+                    label="Start Time"
+                    fullWidth
+                    margin="normal"
+                    type="time"
+                    value={item.start_time}
+                    onChange={(e) =>
+                      updateProgramItem(index, "start_time", e.target.value)
+                    }
+                  />
+                  <TextField
+                    label="End Time"
+                    fullWidth
+                    margin="normal"
+                    type="time"
+                    value={item.end_time}
+                    onChange={(e) =>
+                      updateProgramItem(index, "end_time", e.target.value)
+                    }
+                  />
+                </CardContent>
+                <CardActions>
+                  <Button
+                    variant="outlined"
+                    color="error"
+                    onClick={() => removeProgramItem(index)}
+                  >
+                    Remove Program Item
+                  </Button>
+                </CardActions>
+              </Card>
+            ))}
+            <Button variant="outlined" onClick={addProgramItem}>
+              Add Program Item
             </Button>
           </Box>
 
@@ -222,7 +431,7 @@ const AddEventPage = () => {
             </Alert>
           )}
           <Button type="submit" variant="contained" fullWidth sx={{ mt: 3 }}>
-            Створити подію
+            Create Event
           </Button>
         </form>
       </Box>
@@ -230,4 +439,4 @@ const AddEventPage = () => {
   );
 };
 
-export default AddEventPage;
+export default EventCreationForm;

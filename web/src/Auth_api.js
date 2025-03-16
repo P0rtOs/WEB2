@@ -129,6 +129,11 @@ export const getUserType = async () => {
   return response.data.user_type;
 };
 
+export const toggleAdmin = async () => {
+  const response = await apiAuth.patch("/toggle-admin/");
+  return response.data;
+};
+
 // Авторизация через Google
 export const googleLogin = async (idToken) => {
   try {

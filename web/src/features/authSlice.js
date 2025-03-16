@@ -1,21 +1,22 @@
+// src/features/authSlice.js
 import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
-  role: null, // Роль пользователя, по умолчанию отсутствует
+  currentUser: null, // Полный объект пользователя
 };
 
 const authSlice = createSlice({
   name: "auth",
   initialState,
   reducers: {
-    setUserRole: (state, action) => {
-      state.role = action.payload;
+    setCurrentUser: (state, action) => {
+      state.currentUser = action.payload;
     },
-    clearUserRole: (state) => {
-      state.role = null;
+    clearCurrentUser: (state) => {
+      state.currentUser = null;
     },
   },
 });
 
-export const { setUserRole, clearUserRole } = authSlice.actions;
+export const { setCurrentUser, clearCurrentUser } = authSlice.actions;
 export default authSlice.reducer;

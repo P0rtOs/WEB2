@@ -3,7 +3,8 @@ from django.contrib.auth import get_user_model, authenticate
 from rest_framework import generics, status, views
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
-from .serializers import UserRegistrationSerializer, GoogleAuthSerializer
+from .serializers import UserRegistrationSerializer, GoogleAuthSerializer, CustomUserSerializer  
+from rest_framework.permissions import IsAuthenticated
 
 User = get_user_model()
 
@@ -23,6 +24,18 @@ class UserLoginView(views.APIView):
                 'access': str(refresh.access_token),
             })
         return Response({'error': 'Неверные учетные данные'}, status=status.HTTP_401_UNAUTHORIZED)
+
+
+class ToggleAdminView(views.APIView):
+    permission_classes = [IsAuthenticated]
+
+    def patch(self, request, *args, **kwargs):
+        user = request.user
+        # Переключаем is_staff: если был False – становится True, иначе наоборот.
+        user.is_staff = not user.is_staff
+        user.save()
+        serializer = CustomUserSerializer(user)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 class GoogleLoginView(views.APIView):
     """

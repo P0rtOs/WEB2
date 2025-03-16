@@ -1,10 +1,10 @@
 // src/components/Login.jsx
 import React, { useState } from "react";
 import { useNavigate } from "react-router";
-import { loginUser, getUserType } from "../Auth_api.js";
+import { loginUser, getUserProfile } from "../Auth_api.js";
 import GoogleAuth from "./GoogleAuth.jsx";
 import { useDispatch } from "react-redux";
-import { setUserRole } from "../features/authSlice";
+import { setCurrentUser } from "../features/authSlice";
 import {
   Container,
   Box,
@@ -30,8 +30,8 @@ const Login = () => {
   const handleSocialLoginSuccess = async (data) => {
     localStorage.setItem("accessToken", data.access);
     localStorage.setItem("refreshToken", data.refresh);
-    const role = await getUserType();
-    dispatch(setUserRole(role));
+    const profileResponse = await getUserProfile();
+    dispatch(setCurrentUser(profileResponse.data));
     navigate("/");
   };
 
@@ -40,8 +40,8 @@ const Login = () => {
     setError("");
     try {
       await loginUser(formData.email, formData.password);
-      const role = await getUserType();
-      dispatch(setUserRole(role));
+      const profileResponse = await getUserProfile();
+      dispatch(setCurrentUser(profileResponse.data));
       navigate("/");
     } catch (err) {
       setError(err.message);

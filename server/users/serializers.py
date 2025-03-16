@@ -4,6 +4,12 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 User = get_user_model()
 
+class CustomUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        # Добавляем поля, которые вы хотите видеть в профиле
+        fields = ('id', 'email', 'username', 'user_type', 'first_name', 'last_name', 'is_staff')
+
 class UserRegistrationSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
     
