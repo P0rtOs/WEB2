@@ -1,4 +1,4 @@
-// C:/Users/Fr0ndeur/Desktop/3_year_2_semestr/WEB2/web/src/components/EventCard.jsx
+// src/components/EventCard.jsx
 import React from "react";
 import {
   Card,
@@ -7,47 +7,65 @@ import {
   CardMedia,
   Typography,
   Box,
+  Chip,
 } from "@mui/material";
 import { useNavigate } from "react-router";
 
 const EventCard = ({ event }) => {
   const navigate = useNavigate();
 
-  // Определяем минимальную цену из тиров
   const getMinPrice = () => {
-    if (!event.ticket_tiers || event.ticket_tiers.length === 0) return "N/A";
-    const prices = event.ticket_tiers.map((tier) => parseFloat(tier.price));
+    if (!event.ticket_tiers?.length) return "N/A";
+    const prices = event.ticket_tiers.map((t) => parseFloat(t.price));
     return Math.min(...prices).toFixed(2);
   };
 
-  // Обрезаем описание до, например, 100 символов
   const truncatedDescription =
-    event.description.length > 100
-      ? event.description.substring(0, 100) + "..."
+    event.description.length > 120
+      ? event.description.slice(0, 120) + "..."
       : event.description;
 
   return (
-    <Card sx={{ maxWidth: 345, m: 2 }}>
-      <CardActionArea onClick={() => navigate(`/events/${event.id}`)}>
+    <Card sx={{ display: "flex", width: "100%", mb: 2 }}>
+      <CardActionArea
+        onClick={() => navigate(`/events/${event.id}`)}
+        sx={{ display: "flex", alignItems: "stretch" }}
+      >
         {event.image && (
           <CardMedia
             component="img"
-            height="140"
             image={event.image}
             alt={event.title}
+            sx={{ width: 200, objectFit: "cover" }}
           />
         )}
-        <CardContent>
-          <Typography gutterBottom variant="h5" component="div">
+        <CardContent sx={{ flex: 1, display: "flex", flexDirection: "column" }}>
+          {/* Название */}
+          <Typography variant="h5" gutterBottom>
             {event.title}
           </Typography>
-          <Typography variant="body2" color="text.secondary">
-            {truncatedDescription}
-          </Typography>
-          <Box sx={{ mt: 1 }}>
-            <Typography variant="subtitle2" color="primary">
-              Від {getMinPrice()} грн.
+
+          {/* Описание */}
+          <Box sx={{ flex: 1 }}>
+            <Typography variant="body2" color="text.secondary">
+              {truncatedDescription}
             </Typography>
+          </Box>
+
+          {/* Нижняя панель: спикер, время, цена */}
+          <Box sx={{ mt: 2, display: "flex", gap: 1 }}>
+            {event.speaker && <Chip label={event.speaker} size="small" />}
+            {event.start_time && (
+              <Chip
+                label={new Date(event.start_time).toLocaleString()}
+                size="small"
+              />
+            )}
+            <Chip
+              label={`Від ${getMinPrice()} грн`}
+              color="primary"
+              size="small"
+            />
           </Box>
         </CardContent>
       </CardActionArea>

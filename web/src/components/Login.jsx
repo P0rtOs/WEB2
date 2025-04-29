@@ -14,7 +14,7 @@ import {
   Alert,
 } from "@mui/material";
 
-const Login = () => {
+const Login = ({ onClose }) => {
   const [formData, setFormData] = useState({
     email: "ivabobul1966@gmail.com",
     password: "HatsuneMiku",
@@ -42,6 +42,7 @@ const Login = () => {
       await loginUser(formData.email, formData.password);
       const profileResponse = await getUserProfile();
       dispatch(setCurrentUser(profileResponse.data));
+      if (onClose) onClose();
       navigate("/");
     } catch (err) {
       setError(err.message);
@@ -50,10 +51,17 @@ const Login = () => {
 
   return (
     <Container maxWidth="sm">
-      <Box sx={{ mt: 8, p: 4, boxShadow: 3, borderRadius: 2 }}>
-        <Typography variant="h4" align="center" gutterBottom>
+      <Box
+        sx={{
+          mt: 2,
+          p: 4,
+          boxShadow: 0,
+          borderRadius: 2,
+        }}
+      >
+        {/* <Typography variant="h4" align="center" gutterBottom>
           Login
-        </Typography>
+        </Typography> */}
         <form onSubmit={handleSubmit}>
           <TextField
             label="Email"

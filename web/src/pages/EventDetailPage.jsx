@@ -1,162 +1,223 @@
-// C:/Users/Fr0ndeur/Desktop/3_year_2_semestr/WEB2/web/src/pages/EventDetailPage.jsx
+// src/pages/EventDetailPage.jsx
 import React, { useEffect, useState } from "react";
 import {
-  Container,
-  Typography,
   Box,
-  Card,
-  CardMedia,
-  CardContent,
-  Grid,
+  Typography,
   Button,
+  Chip,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  RadioGroup,
+  FormControlLabel,
+  Radio,
+  Alert,
 } from "@mui/material";
 import { useParams, useNavigate } from "react-router";
-import { apiEvents } from "../Auth_api.js";
 import { useSelector } from "react-redux";
+import Sidebar from "../components/Sidebar.jsx";
+import EventForm from "../components/EventForm";
+import { apiEvents } from "../Auth_api.js";
+
+const drawerWidth = 240;
+
+function BuyTicketModal({ open, onClose, ticketTiers, onPurchase }) {
+  const [selectedTier, setSelectedTier] = useState(null);
+  const [error, setError] = useState("");
+
+  const handleSelect = (e) =>
+    setSelectedTier(ticketTiers.find((t) => t.id === parseInt(e.target.value)));
+  const handlePay = () => {
+    if (!selectedTier) {
+      setError("Оберіть тариф");
+      return;
+    }
+    onPurchase(selectedTier);
+  };
+
+  return (
+    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
+      <DialogTitle>Купити квиток</DialogTitle>
+      <DialogContent dividers>
+        <Typography variant="h6">Оберіть тариф</Typography>
+        <RadioGroup
+          onChange={handleSelect}
+          value={selectedTier?.id?.toString() || ""}
+        >
+          {ticketTiers?.map((tier) => (
+            <FormControlLabel
+              key={tier.id}
+              value={tier.id.toString()}
+              control={<Radio />}
+              label={`${tier.title} — ${parseFloat(tier.price).toFixed(2)} грн`}
+            />
+          ))}
+        </RadioGroup>
+        {selectedTier && (
+          <Box sx={{ mt: 2 }}>
+            <Typography variant="subtitle1">Опис тарифу</Typography>
+            <Typography>{selectedTier.description}</Typography>
+          </Box>
+        )}
+        {error && (
+          <Alert severity="error" sx={{ mt: 2 }}>
+            {error}
+          </Alert>
+        )}
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={onClose}>Відмінити</Button>
+        <Button variant="contained" onClick={handlePay}>
+          Сплатити
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+}
 
 const EventDetailPage = () => {
   const { id } = useParams();
-  const [event, setEvent] = useState(null);
   const navigate = useNavigate();
-  const currentUser = useSelector((state) => state.auth.currentUser);
+  const { currentUser } = useSelector((state) => state.auth);
+
+  const [event, setEvent] = useState(null);
+  const [buyOpen, setBuyOpen] = useState(false);
+  const [purchaseError, setPurchaseError] = useState("");
+  const [editOpen, setEditOpen] = useState(false);
+
+  // Определяем, может ли текущий пользователь редактировать событие
+  const currentUserIsOrganizer =
+    currentUser?.user_type === "organizer" &&
+    event?.organizer === currentUser.id;
 
   useEffect(() => {
-    const fetchEvent = async () => {
-      try {
-        // Базовый URL уже указывает на /api/events, достаточно указать "/<id>/"
-        const response = await apiEvents.get(`/${id}/`);
-        setEvent(response.data);
-      } catch (err) {
-        console.error("Error fetching event:", err);
-      }
-    };
-    fetchEvent();
+    apiEvents
+      .get(`/${id}/`)
+      .then((res) => setEvent(res.data))
+      .catch(console.error);
   }, [id]);
 
-  const handleDelete = async () => {
-    try {
-      await apiEvents.delete(`/${event.id}/`);
-      navigate("/events");
-    } catch (err) {
-      console.error("Ошибка удаления:", err);
-    }
+  const handlePurchase = (tier) => {
+    apiEvents
+      .post("/purchase/", { event_id: id, tier_id: tier.id })
+      .then(() => {
+        setBuyOpen(false);
+        navigate("/events/my-registrations");
+      })
+      .catch((err) =>
+        setPurchaseError(err.response?.data?.error || "Помилка покупки")
+      );
   };
 
-  // Функция перехода на страницу покупки билета
-  const handleBuyTicket = () => {
-    navigate(`/purchase-ticket/${id}`);
-  };
+  if (!event) return null;
 
-  // Кнопка удаления доступна для администратора или для организатора (создателя)
-  const canDelete =
-    event &&
-    currentUser &&
-    (currentUser.is_staff || currentUser.id === event.organizer);
-
-  if (!event) return <div>Loading...</div>;
+  const tiers = event.ticket_tiers || [];
 
   return (
-    <Container sx={{ mt: 4 }}>
-      {event.image && (
-        <CardMedia
-          component="img"
-          height="300"
-          image={event.image}
-          alt={event.title}
-        />
-      )}
-      <Box sx={{ mt: 2 }}>
+    <>
+      <Sidebar />
+      <Box component="main" sx={{ pt: 4, pl: `calc(${drawerWidth}px)` }}>
+        {/* Event Image */}
+        {event.image && (
+          <Box sx={{ mb: 2 }}>
+            <img
+              src={event.image}
+              alt={event.title}
+              style={{ width: "100%", maxHeight: 400, objectFit: "cover" }}
+            />
+          </Box>
+        )}
+        {/* Title */}
         <Typography variant="h4" gutterBottom>
           {event.title}
         </Typography>
-        <Typography variant="body1" gutterBottom>
-          {event.description}
-        </Typography>
-        <Typography variant="subtitle1" gutterBottom>
-          Место проведения: {event.location}
-        </Typography>
-        <Typography variant="subtitle1" gutterBottom>
-          Даты проведения: {new Date(event.start_date).toLocaleString()}
-          {event.end_date && ` - ${new Date(event.end_date).toLocaleString()}`}
-        </Typography>
-        {event.speakers && event.speakers.length > 0 && (
-          <Box sx={{ mt: 3 }}>
-            <Typography variant="h5" gutterBottom>
-              Спикеры
+        {/* Buy button */}
+        <Button
+          variant="contained"
+          sx={{ mb: 2 }}
+          onClick={() => setBuyOpen(true)}
+        >
+          Купити квиток
+        </Button>
+        {/* Description & Metadata */}
+        <Box sx={{ display: "flex", gap: 4, mb: 4 }}>
+          <Box sx={{ flex: 2 }}>
+            <Typography variant="body1" paragraph>
+              {event.description}
             </Typography>
-            {event.speakers.map((speaker) => (
-              <Typography key={speaker.id} variant="body2">
-                {speaker.name} — {speaker.bio}
-              </Typography>
-            ))}
-          </Box>
-        )}
-        {event.sponsors && event.sponsors.length > 0 && (
-          <Box sx={{ mt: 3 }}>
-            <Typography variant="h5" gutterBottom>
-              Спонсоры
-            </Typography>
-            {event.sponsors.map((sponsor) => (
-              <Typography key={sponsor.id} variant="body2">
-                {sponsor.name} — {sponsor.website}
-              </Typography>
-            ))}
-          </Box>
-        )}
-        {event.program_items && event.program_items.length > 0 && (
-          <Box sx={{ mt: 3 }}>
-            <Typography variant="h5" gutterBottom>
-              Программа
-            </Typography>
-            {event.program_items.map((item) => (
-              <Box key={item.id} sx={{ mb: 2 }}>
-                <Typography variant="subtitle1">{item.title}</Typography>
-                <Typography variant="body2">{item.description}</Typography>
-                <Typography variant="caption">
-                  {item.start_time} - {item.end_time}
-                </Typography>
+            {/* Program */}
+            {event.program_items?.length > 0 && (
+              <Box sx={{ mt: 3 }}>
+                <Typography variant="h6">Програма</Typography>
+                {event.program_items.map((item) => (
+                  <Box key={item.id} sx={{ mb: 1 }}>
+                    <Typography>
+                      <strong>
+                        {item.start_time}–{item.end_time}
+                      </strong>{" "}
+                      {item.title}
+                    </Typography>
+                    <Typography variant="body2">{item.description}</Typography>
+                  </Box>
+                ))}
               </Box>
-            ))}
+            )}
           </Box>
-        )}
-        <Box sx={{ mt: 3 }}>
-          <Typography variant="h5" gutterBottom>
-            Тиры квитків
-          </Typography>
-          <Grid container spacing={2}>
-            {event.ticket_tiers &&
-              event.ticket_tiers.map((tier) => (
-                <Grid item xs={12} sm={6} md={4} key={tier.id}>
-                  <Card>
-                    <CardContent>
-                      <Typography variant="h6">{tier.title}</Typography>
-                      <Typography variant="body2">
-                        {tier.description}
-                      </Typography>
-                      <Typography variant="subtitle1">
-                        Ціна: {tier.price} грн.
-                      </Typography>
-                      <Typography variant="body2">
-                        Осталося квитків: {tier.tickets_remaining}
-                      </Typography>
-                    </CardContent>
-                  </Card>
-                </Grid>
-              ))}
-          </Grid>
+          <Box
+            sx={{ flex: 1, display: "flex", flexDirection: "column", gap: 1 }}
+          >
+            <Chip
+              label={`Від ${Math.min(
+                ...tiers.map((t) => parseFloat(t.price))
+              ).toFixed(2)} грн`}
+            />
+            <Typography>
+              Дата: {new Date(event.start_date).toLocaleString()}
+            </Typography>
+            <Typography>Спікери:</Typography>
+            {event.speakers?.map((s) => (
+              <Typography key={s.id}>• {s.name}</Typography>
+            ))}
+            <Typography>Спонсори:</Typography>
+            {event.sponsors?.map((s) => (
+              <Typography key={s.id}>• {s.name}</Typography>
+            ))}
+            <Typography>
+              Тип: {tiers.map((t) => t.ticket_type).join(", ")}
+            </Typography>
+            <Typography>Локація: {event.location}</Typography>
+          </Box>
         </Box>
-        <Box sx={{ mt: 3, display: "flex", gap: 2 }}>
-          <Button variant="contained" color="primary" onClick={handleBuyTicket}>
-            Купить билет
-          </Button>
-          {canDelete && (
-            <Button variant="contained" color="error" onClick={handleDelete}>
-              Видалити подію
-            </Button>
-          )}
-        </Box>
+        {purchaseError && <Alert severity="error">{purchaseError}</Alert>}
       </Box>
-    </Container>
+      <BuyTicketModal
+        open={buyOpen}
+        onClose={() => setBuyOpen(false)}
+        ticketTiers={tiers}
+        onPurchase={handlePurchase}
+      />
+
+      {currentUserIsOrganizer && (
+        <Button onClick={() => setEditOpen(true)}>Редагувати подію</Button>
+      )}
+
+      <Dialog
+        open={editOpen}
+        onClose={() => setEditOpen(false)}
+        maxWidth="md"
+        fullWidth
+      >
+        <EventForm
+          initialData={event}
+          onSuccess={(updated) => {
+            setEvent(updated);
+            setEditOpen(false);
+          }}
+          onCancel={() => setEditOpen(false)}
+        />
+      </Dialog>
+    </>
   );
 };
 

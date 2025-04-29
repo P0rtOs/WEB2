@@ -76,5 +76,12 @@ class Registration(models.Model):
     ticket_tier = models.ForeignKey(TicketTier, null=True, blank=True, on_delete=models.SET_NULL)
     registered_at = models.DateTimeField(auto_now_add=True)
     paid = models.BooleanField(default=False)
+    def save(self, *args, **kwargs):
+        # перед созданием Registration
+        if not self.pk and self.ticket_tier.tickets_remaining:
+            self.ticket_tier.tickets_remaining -= 1
+            self.ticket_tier.save()
+        super().save(*args, **kwargs)
+    
     def __str__(self):
         return f"{self.participant.email} -> {self.event.title}"

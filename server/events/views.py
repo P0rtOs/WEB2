@@ -1,7 +1,7 @@
 from rest_framework import generics, permissions, views
 from rest_framework.parsers import MultiPartParser, FormParser
-from .models import Event
-from .serializers import EventSerializer
+from .models import Event, TicketTier, Registration
+from .serializers import EventSerializer, RegistrationSerializer
 from users.permissions import IsOrganizer, IsEventOwnerOrStaff
 from rest_framework.response import Response
 from rest_framework import status
@@ -35,9 +35,24 @@ class EventDetailView(generics.RetrieveUpdateDestroyAPIView):
 class TicketPurchaseView(views.APIView):
     permission_classes = [permissions.IsAuthenticated]
 
-    def post(self, request, *args, **kwargs):
-        # Пока что возвращаем заглушку без изменения данных
-        return Response({"detail": "Ticket purchase functionality is under development."}, status=status.HTTP_200_OK)
+    def post(self, request):
+        event_id = request.data.get('event_id')
+        tier_id  = request.data.get('tier_id')
+        try:
+            tier = TicketTier.objects.get(pk=tier_id, event_id=event_id)
+        except TicketTier.DoesNotExist:
+            return Response({"error":"Tier not found"}, status=404)
+
+        if tier.tickets_remaining < 1:
+            return Response({"error":"Sold out"}, status=400)
+
+        reg = Registration.objects.create(
+            event = tier.event,
+            participant = request.user,
+            ticket_tier = tier,
+            paid = True
+        )
+        return Response(RegistrationSerializer(reg).data, status=201)
 
 # class RegistrationCreateView(generics.CreateAPIView):
 #     queryset = Registration.objects.all()
@@ -76,3 +91,20 @@ class AdminAnalyticsView(views.APIView):
             'total_events': total_events,
             'total_registrations': total_registrations,
         }, status=status.HTTP_200_OK)
+
+
+# 2) Список своих регистраций (для клиента):
+class MyRegistrationsView(generics.ListAPIView):
+    serializer_class = RegistrationSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return Registration.objects.filter(participant=self.request.user)
+
+# 3) Список своих ивентов (для организатора):
+class MyEventsView(generics.ListAPIView):
+    serializer_class = EventSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return Event.objects.filter(organizer=self.request.user)

@@ -1,20 +1,31 @@
 import React from "react";
-import { Container, Row, Col, Button } from "react-bootstrap";
+import { Container, Button, Typography, Grid } from "@mui/material";
+import Sidebar from "../components/Sidebar"; // <-- вместо Header
 import JWT_Test from "../test_components/ProtectedTestButton.jsx";
 import ToUser from "../test_components/ToUserButton.jsx";
 import ToOrganizer from "../test_components/OrganizerButton.jsx";
 import UserTypeCheck from "../test_components/CheckUserType.jsx";
 import ToggleAdminButton from "../test_components/ToggleAdminButton";
 
+const drawerWidth = 240;
+
 const TestPage = () => {
   return (
-    <div>
-      <JWT_Test />
-      <ToUser />
-      <ToOrganizer />
-      <UserTypeCheck />
-      <ToggleAdminButton />
-    </div>
+    <>
+      <Sidebar />
+      <Container
+        sx={{
+          mt: 4,
+          ml: `${drawerWidth}px`, // сдвигаем вправо
+        }}
+      >
+        <JWT_Test />
+        <ToUser />
+        <ToOrganizer />
+        <UserTypeCheck />
+        <ToggleAdminButton />
+      </Container>
+    </>
   );
 };
 
