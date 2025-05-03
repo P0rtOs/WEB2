@@ -6,7 +6,7 @@ import ToUser from "../test_components/ToUserButton.jsx";
 import ToOrganizer from "../test_components/OrganizerButton.jsx";
 import UserTypeCheck from "../test_components/CheckUserType.jsx";
 import ToggleAdminButton from "../test_components/ToggleAdminButton";
-
+import Big_calendar from "../components/Calendar.jsx";
 const drawerWidth = 240;
 
 const TestPage = () => {
@@ -25,6 +25,7 @@ const TestPage = () => {
         <UserTypeCheck />
         <ToggleAdminButton />
       </Container>
+      <Big_calendar />
     </>
   );
 };
