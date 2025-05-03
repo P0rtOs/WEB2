@@ -67,7 +67,8 @@ class EventSerializer(serializers.ModelSerializer):
         model = Event
         fields = (
             'id','title','description','location','start_date','end_date','image',
-            'ticket_tiers','speakers','sponsors','program_items','organizer'
+            'ticket_tiers','speakers','sponsors','program_items','organizer',
+            'event_type','created_at'
         )
 
     def create(self, validated_data):

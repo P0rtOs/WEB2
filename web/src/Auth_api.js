@@ -1,5 +1,8 @@
 import axios from "axios";
 
+import store from "./store";
+import { setCurrentUser, clearCurrentUser } from "./features/authSlice";
+
 // URL для эндпоинтов аутентификации и событий
 const API_AUTH_URL = "http://127.0.0.1:8000/api/auth";
 const API_EVENTS_URL = "http://127.0.0.1:8000/api/events";
@@ -92,6 +95,27 @@ const addAuthInterceptor = (instance) => {
 
 addAuthInterceptor(apiAuth);
 addAuthInterceptor(apiEvents);
+
+const addProfileInterceptor = (instance) => {
+  instance.interceptors.request.use(
+    async (config) => {
+      // пропускаем, если сам запрос идёт к /users/me/
+      if (config.url.includes("/users/me/")) return config;
+
+      try {
+        const { data } = await apiAuth.get("/users/me/");
+        store.dispatch(setCurrentUser(data));
+      } catch {
+        store.dispatch(clearCurrentUser());
+      }
+      return config;
+    },
+    (error) => Promise.reject(error)
+  );
+};
+
+//addProfileInterceptor(apiAuth);
+addProfileInterceptor(apiEvents);
 
 // Функция для логина по email и паролю
 export const loginUser = async (email, password) => {

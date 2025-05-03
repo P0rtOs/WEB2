@@ -46,6 +46,15 @@ class Event(models.Model):
     sponsors = models.ManyToManyField(Sponsor, blank=True)
     program_items = models.ManyToManyField(ProgramItem, blank=True)
 
+
+    EVENT_TYPES = (
+        ('conference', 'Conference'),
+        ('meetup', 'Meetup'),
+        ('webinar', 'Webinar'),
+        ('workshop', 'Workshop'),
+    )
+    event_type   = models.CharField(max_length=50, choices=EVENT_TYPES, default='conference')
+    created_at   = models.DateTimeField(auto_now_add=True)
     def __str__(self):
         return self.title
 

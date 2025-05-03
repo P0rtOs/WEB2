@@ -6,6 +6,7 @@ import ToUser from "../test_components/ToUserButton.jsx";
 import ToOrganizer from "../test_components/OrganizerButton.jsx";
 import UserTypeCheck from "../test_components/CheckUserType.jsx";
 import ToggleAdminButton from "../test_components/ToggleAdminButton";
+import TestDataGenerator from "../test_components/TestDataGenerate.jsx";
 
 const drawerWidth = 240;
 
@@ -24,6 +25,7 @@ const TestPage = () => {
         <ToOrganizer />
         <UserTypeCheck />
         <ToggleAdminButton />
+        <TestDataGenerator />
       </Container>
     </>
   );

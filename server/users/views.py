@@ -4,7 +4,7 @@ from rest_framework import generics, status, views
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from .serializers import UserRegistrationSerializer, GoogleAuthSerializer, CustomUserSerializer  
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
 
 User = get_user_model()
 
@@ -79,3 +79,5 @@ class GoogleLoginView(views.APIView):
             "access": str(refresh.access_token),
             "refresh": str(refresh)
         })
+
+
