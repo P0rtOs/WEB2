@@ -11,6 +11,7 @@ import EventDetailPage from "./pages/EventDetailPage.jsx";
 import TicketPurchasePage from "./pages/TicketPurchasePage.jsx";
 import AnalyticsOrganizerPage from "./pages/AnalyticsOrganizerPage.jsx";
 import AnalyticsAdminPage from "./pages/AnalyticsAdminPage.jsx";
+import MyRegistrationsPage from "./pages/MyRegistrationsPage.jsx";
 import "./css/Main.scss";
 
 import { useDispatch } from "react-redux";
@@ -42,6 +43,10 @@ function App() {
         <Route path="/add-event" element={<AddEventPage />} />
         <Route path="/events/:id" element={<EventDetailPage />} />
         <Route path="/purchase-ticket/:id" element={<TicketPurchasePage />} />
+        <Route
+          path="/events/my-registrations"
+          element={<MyRegistrationsPage />}
+        />
         <Route
           path="/analytics/organizer"
           element={<AnalyticsOrganizerPage />}

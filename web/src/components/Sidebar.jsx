@@ -71,7 +71,11 @@ const Sidebar = () => {
               icon: <NotificationsIcon />,
               to: "/notifications",
             },
-            { text: "My Events", icon: <EventIcon />, to: "/events" },
+            {
+              text: "My Events",
+              icon: <EventIcon />,
+              to: "/events/my-registrations",
+            },
             { text: "Calendar", icon: <CalendarTodayIcon />, to: "/calendar" },
             {
               text: "Admin Analytics",
