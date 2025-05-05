@@ -17,238 +17,14 @@ import Sidebar from "../components/Sidebar";
 import { apiEvents } from "../Auth_api.js";
 import { useNavigate } from "react-router";
 
+import {
+  TicketTierModal,
+  SpeakerModal,
+  SponsorModal,
+  ProgramItemModal,
+} from "../components/EventModals";
+
 const drawerWidth = 240;
-
-// ==== Modal Components ====
-
-function TicketTierModal({ open, tier = {}, onClose, onSave }) {
-  const [form, setForm] = useState({
-    title: "",
-    description: "",
-    price: "",
-    ticket_type: "paid",
-    ...tier,
-  });
-  useEffect(
-    () =>
-      setForm({
-        title: "",
-        description: "",
-        price: "",
-        ticket_type: "paid",
-        ...tier,
-      }),
-    [tier]
-  );
-  const handle = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
-  return (
-    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-      <DialogTitle>
-        {tier.title ? "Редагувати тариф" : "Новий тариф"}
-      </DialogTitle>
-      <DialogContent dividers>
-        <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-          <TextField
-            label="Назва тарифу"
-            value={form.title}
-            onChange={handle("title")}
-            fullWidth
-          />
-          <TextField
-            label="Опис тарифу"
-            value={form.description}
-            onChange={handle("description")}
-            fullWidth
-            multiline
-            rows={2}
-          />
-          <TextField
-            label="Ціна"
-            value={form.price}
-            onChange={handle("price")}
-            fullWidth
-            type="number"
-          />
-          <TextField
-            label="Тип квитка"
-            value={form.ticket_type}
-            onChange={handle("ticket_type")}
-            fullWidth
-          />
-        </Box>
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose}>Відмінити</Button>
-        <Button
-          variant="contained"
-          onClick={() => {
-            onSave(form);
-            onClose();
-          }}
-        >
-          Зберегти
-        </Button>
-      </DialogActions>
-    </Dialog>
-  );
-}
-
-function SpeakerModal({ open, speaker = {}, onClose, onSave }) {
-  const [form, setForm] = useState({ name: "", bio: "", ...speaker });
-  useEffect(() => setForm({ name: "", bio: "", ...speaker }), [speaker]);
-  const handle = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
-  return (
-    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-      <DialogTitle>
-        {speaker.name ? "Редагувати спікера" : "Новий спікер"}
-      </DialogTitle>
-      <DialogContent dividers>
-        <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-          <TextField
-            label="Ім’я спікера"
-            value={form.name}
-            onChange={handle("name")}
-            fullWidth
-          />
-          <TextField
-            label="Біо"
-            value={form.bio}
-            onChange={handle("bio")}
-            fullWidth
-            multiline
-            rows={2}
-          />
-        </Box>
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose}>Відмінити</Button>
-        <Button
-          variant="contained"
-          onClick={() => {
-            onSave(form);
-            onClose();
-          }}
-        >
-          Зберегти
-        </Button>
-      </DialogActions>
-    </Dialog>
-  );
-}
-
-function SponsorModal({ open, sponsor = {}, onClose, onSave }) {
-  const [form, setForm] = useState({ name: "", website: "", ...sponsor });
-  useEffect(() => setForm({ name: "", website: "", ...sponsor }), [sponsor]);
-  const handle = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
-  return (
-    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-      <DialogTitle>
-        {sponsor.name ? "Редагувати спонсора" : "Новий спонсор"}
-      </DialogTitle>
-      <DialogContent dividers>
-        <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-          <TextField
-            label="Назва спонсора"
-            value={form.name}
-            onChange={handle("name")}
-            fullWidth
-          />
-          <TextField
-            label="Сайт"
-            value={form.website}
-            onChange={handle("website")}
-            fullWidth
-          />
-        </Box>
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose}>Відмінити</Button>
-        <Button
-          variant="contained"
-          onClick={() => {
-            onSave(form);
-            onClose();
-          }}
-        >
-          Зберегти
-        </Button>
-      </DialogActions>
-    </Dialog>
-  );
-}
-
-function ProgramItemModal({ open, item = {}, onClose, onSave }) {
-  const [form, setForm] = useState({
-    title: "",
-    description: "",
-    start_time: "",
-    end_time: "",
-    ...item,
-  });
-  useEffect(
-    () =>
-      setForm({
-        title: "",
-        description: "",
-        start_time: "",
-        end_time: "",
-        ...item,
-      }),
-    [item]
-  );
-  const handle = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
-  return (
-    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-      <DialogTitle>
-        {item.title ? "Редагувати пункт програми" : "Новий пункт програми"}
-      </DialogTitle>
-      <DialogContent dividers>
-        <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-          <TextField
-            label="Назва"
-            value={form.title}
-            onChange={handle("title")}
-            fullWidth
-          />
-          <TextField
-            label="Опис"
-            value={form.description}
-            onChange={handle("description")}
-            fullWidth
-            multiline
-            rows={2}
-          />
-          <TextField
-            label="Час початку"
-            value={form.start_time}
-            onChange={handle("start_time")}
-            type="time"
-            fullWidth
-          />
-          <TextField
-            label="Час кінця"
-            value={form.end_time}
-            onChange={handle("end_time")}
-            type="time"
-            fullWidth
-          />
-        </Box>
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose}>Відмінити</Button>
-        <Button
-          variant="contained"
-          onClick={() => {
-            onSave(form);
-            onClose();
-          }}
-        >
-          Зберегти
-        </Button>
-      </DialogActions>
-    </Dialog>
-  );
-}
 
 // ==== Main Page ====
 
@@ -260,6 +36,7 @@ export default function AddEventPage() {
     location: "",
     start_date: "",
     end_date: "",
+    event_type: "conference", // по-умолчанию
   });
   const [image, setImage] = useState(null);
   const [ticketTiers, setTicketTiers] = useState([]);
@@ -378,6 +155,22 @@ export default function AddEventPage() {
             value={eventForm.end_date}
             onChange={handleFormChange}
           />
+
+          <FormControl fullWidth margin="normal">
+            <InputLabel id="event-type-label">Тип події</InputLabel>
+            <Select
+              labelId="event-type-label"
+              label="Тип події"
+              name="event_type"
+              value={eventForm.event_type}
+              onChange={handleFormChange}
+            >
+              <MenuItem value="conference">Conference</MenuItem>
+              <MenuItem value="meetup">Meetup</MenuItem>
+              <MenuItem value="webinar">Webinar</MenuItem>
+              <MenuItem value="workshop">Workshop</MenuItem>
+            </Select>
+          </FormControl>
           <Box sx={{ mt: 2 }}>
             <Button variant="contained" component="label">
               Завантажити зображення

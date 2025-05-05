@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router";
 import Home from "./pages/HomePage.jsx";
 import Events from "./pages/EventsPage.jsx";
@@ -11,11 +11,28 @@ import EventDetailPage from "./pages/EventDetailPage.jsx";
 import TicketPurchasePage from "./pages/TicketPurchasePage.jsx";
 import AnalyticsOrganizerPage from "./pages/AnalyticsOrganizerPage.jsx";
 import AnalyticsAdminPage from "./pages/AnalyticsAdminPage.jsx";
+import MyRegistrationsPage from "./pages/MyRegistrationsPage.jsx";
 import "./css/Main.scss";
+
+import { useDispatch } from "react-redux";
+import { setCurrentUser, clearCurrentUser } from "./features/authSlice";
+import { getUserProfile } from "./Auth_api.js";
+
+// Добавляем этот компонент для загрузки профиля
+function LoadCurrentUser() {
+  const dispatch = useDispatch();
+  useEffect(() => {
+    getUserProfile()
+      .then((res) => dispatch(setCurrentUser(res.data)))
+      .catch(() => dispatch(clearCurrentUser()));
+  }, [dispatch]);
+  return null;
+}
 
 function App() {
   return (
     <Router>
+      <LoadCurrentUser />
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/events" element={<Events />} />
@@ -26,6 +43,10 @@ function App() {
         <Route path="/add-event" element={<AddEventPage />} />
         <Route path="/events/:id" element={<EventDetailPage />} />
         <Route path="/purchase-ticket/:id" element={<TicketPurchasePage />} />
+        <Route
+          path="/events/my-registrations"
+          element={<MyRegistrationsPage />}
+        />
         <Route
           path="/analytics/organizer"
           element={<AnalyticsOrganizerPage />}

@@ -86,10 +86,15 @@ const EventDetailPage = () => {
   const [purchaseError, setPurchaseError] = useState("");
   const [editOpen, setEditOpen] = useState(false);
 
-  // Определяем, может ли текущий пользователь редактировать событие
-  const currentUserIsOrganizer =
+  const isOrganizer =
     currentUser?.user_type === "organizer" &&
     event?.organizer === currentUser.id;
+  const isAdmin = currentUser?.is_staff;
+
+  // Определяем, может ли текущий пользователь редактировать событие
+  // const currentUserIsOrganizer =
+  //   currentUser?.user_type === "organizer" &&
+  //   event?.organizer === currentUser.id;
 
   useEffect(() => {
     apiEvents
@@ -108,6 +113,17 @@ const EventDetailPage = () => {
       .catch((err) =>
         setPurchaseError(err.response?.data?.error || "Помилка покупки")
       );
+  };
+
+  const handleDelete = async () => {
+    if (window.confirm("Вы уверены, что хотите удалить событие?")) {
+      try {
+        await apiEvents.delete(`/${id}/`);
+        navigate("/events");
+      } catch (err) {
+        console.error("Ошибка удаления:", err);
+      }
+    }
   };
 
   if (!event) return null;
@@ -132,6 +148,17 @@ const EventDetailPage = () => {
         <Typography variant="h4" gutterBottom>
           {event.title}
         </Typography>
+        {/* Кнопки редактировать/удалить */}
+        {(isOrganizer || isAdmin) && (
+          <Box sx={{ mb: 2, display: "flex", gap: 2 }}>
+            <Button variant="contained" onClick={() => setEditOpen(true)}>
+              Редактировать
+            </Button>
+            <Button variant="outlined" color="error" onClick={handleDelete}>
+              Удалить
+            </Button>
+          </Box>
+        )}
         {/* Buy button */}
         <Button
           variant="contained"
@@ -198,10 +225,7 @@ const EventDetailPage = () => {
         onPurchase={handlePurchase}
       />
 
-      {currentUserIsOrganizer && (
-        <Button onClick={() => setEditOpen(true)}>Редагувати подію</Button>
-      )}
-
+      {/* Модалка редактирования */}
       <Dialog
         open={editOpen}
         onClose={() => setEditOpen(false)}
