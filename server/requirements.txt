@@ -17,3 +17,4 @@ python-dotenv
 sqlparse
 tzdata
 pillow
+fake

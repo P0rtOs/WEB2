@@ -7,7 +7,7 @@ import ToOrganizer from "../test_components/OrganizerButton.jsx";
 import UserTypeCheck from "../test_components/CheckUserType.jsx";
 import ToggleAdminButton from "../test_components/ToggleAdminButton";
 import TestDataGenerator from "../test_components/TestDataGenerate.jsx";
-
+import Calendar from "../components/Calendar.jsx";
 const drawerWidth = 240;
 
 const TestPage = () => {
@@ -27,6 +27,7 @@ const TestPage = () => {
         <ToggleAdminButton />
         <TestDataGenerator />
       </Container>
+      < Calendar />
     </>
   );
 };
