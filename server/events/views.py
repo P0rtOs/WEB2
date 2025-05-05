@@ -8,6 +8,8 @@ from rest_framework import status
 from users.models import CustomUser
 from .models import Event, Speaker, Sponsor, ProgramItem, TicketTier
 from django.utils import timezone
+import requests
+from django.core.files.base import ContentFile
 
 import random
 import datetime
@@ -117,6 +119,17 @@ class MyEventsView(generics.ListAPIView):
         return Event.objects.filter(organizer=self.request.user)
 
 
+# Фільтрація подій за типом
+class EventByTypeView(generics.ListAPIView):
+    serializer_class = EventSerializer
+
+    def get_queryset(self):
+        event_type = self.request.query_params.get("type")
+        if event_type:
+            return Event.objects.filter(event_type=event_type)
+        return Event.objects.none()
+
+
 class TestDataGenerateView(views.APIView):
     permission_classes = [IsAdminUser]
 
@@ -146,6 +159,7 @@ class TestDataGenerateView(views.APIView):
                 start_date = fake.date_time_between(start_date='-30d', end_date='now', tzinfo=datetime.timezone.utc)
                 end_date   = start_date + datetime.timedelta(hours=random.randint(1,8))
                 event_type  = random.choice(event_types)
+                
                 # Создаем событие
                 event = Event.objects.create(
                     title=title,
@@ -155,7 +169,19 @@ class TestDataGenerateView(views.APIView):
                     end_date=end_date,
                     organizer=org,
                     event_type=event_type
+                    
                 )
+                try:
+                    image_response = requests.get('https://picsum.photos/600/400', timeout=5)
+                    if image_response.status_code == 200:
+                        event.image.save(
+                            f"{fake.uuid4()}.jpg",  # випадкове імʼя
+                            ContentFile(image_response.content),
+                            save=True
+                        )
+                except Exception as e:
+                    print("Image load failed:", e)
+                
                 # Спикеры
                 for __ in range(random.randint(1,3)):
                     sp, _ = Speaker.objects.get_or_create(
@@ -180,5 +206,8 @@ class TestDataGenerateView(views.APIView):
                 # Тарифы (пример)
                 TicketTier.objects.create(event=event, title='Standard', description=fake.text(max_nb_chars=100), price=random.uniform(10,100), ticket_type='paid')
                 TicketTier.objects.create(event=event, title='VIP',      description=fake.text(max_nb_chars=100), price=random.uniform(50,200), ticket_type='paid')
+                # Завантаження випадкового зображення
 
         return Response({'status': 'Test data generated', 'accounts': accounts}, status=201)
+
+        

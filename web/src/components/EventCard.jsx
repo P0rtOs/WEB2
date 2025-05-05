@@ -1,5 +1,6 @@
-// src/components/EventCard.jsx
 import React from "react";
+import "../css/event_card.scss"
+
 import {
   Card,
   CardActionArea,
@@ -10,6 +11,7 @@ import {
   Chip,
 } from "@mui/material";
 import { useNavigate } from "react-router";
+
 
 const EventCard = ({ event }) => {
   const navigate = useNavigate();
@@ -26,34 +28,31 @@ const EventCard = ({ event }) => {
       : event.description;
 
   return (
-    <Card sx={{ display: "flex", width: "100%", mb: 2 }}>
+    <Card className="event-card">
       <CardActionArea
         onClick={() => navigate(`/events/${event.id}`)}
-        sx={{ display: "flex", alignItems: "stretch" }}
+        className="event-action-area"
       >
         {event.image && (
           <CardMedia
             component="img"
             image={event.image}
             alt={event.title}
-            sx={{ width: 200, objectFit: "cover" }}
+            className="event-image"
           />
         )}
-        <CardContent sx={{ flex: 1, display: "flex", flexDirection: "column" }}>
-          {/* Название */}
+        <CardContent className="event-content">
           <Typography variant="h5" gutterBottom>
             {event.title}
           </Typography>
 
-          {/* Описание */}
-          <Box sx={{ flex: 1 }}>
+          <Box className="event-description">
             <Typography variant="body2" color="text.secondary">
               {truncatedDescription}
             </Typography>
           </Box>
 
-          {/* Нижняя панель: спикер, время, цена */}
-          <Box sx={{ mt: 2, display: "flex", gap: 1 }}>
+          <Box className="event-info">
             {event.speaker && <Chip label={event.speaker} size="small" />}
             {event.start_time && (
               <Chip

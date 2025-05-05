@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import EventListCreateView, EventDetailView, TicketPurchaseView, AdminAnalyticsView, OrganizerAnalyticsView, MyRegistrationsView, MyEventsView, TestDataGenerateView
+from .views import EventByTypeView, EventListCreateView, EventDetailView, TicketPurchaseView, AdminAnalyticsView, OrganizerAnalyticsView, MyRegistrationsView, MyEventsView, TestDataGenerateView
 
 
 
@@ -12,4 +12,5 @@ urlpatterns = [
     path('analytics/organizer/',    OrganizerAnalyticsView.as_view(),   name='organizer-analytics'),
     path('analytics/admin/',        AdminAnalyticsView.as_view(),       name='admin-analytics'),
     path('generate-test-data/',     TestDataGenerateView.as_view(),     name='generate-test-data'),
+    path('by-type/',                EventByTypeView.as_view(),          name='event-by-type'),
 ]
