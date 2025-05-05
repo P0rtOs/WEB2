@@ -1,4 +1,4 @@
-from rest_framework import generics, permissions, views
+from rest_framework import generics, permissions, views, status
 from rest_framework.parsers import MultiPartParser, FormParser
 from .models import Event, TicketTier, Registration
 from .serializers import EventSerializer, RegistrationSerializer
@@ -8,6 +8,12 @@ from rest_framework import status
 from users.models import CustomUser
 from .models import Event, Speaker, Sponsor, ProgramItem, TicketTier
 from django.utils import timezone
+from rest_framework.decorators import api_view
+from django.views.decorators.csrf import csrf_exempt
+from django.conf import settings
+
+import os
+import stripe
 
 import random
 import datetime
@@ -182,3 +188,64 @@ class TestDataGenerateView(views.APIView):
                 TicketTier.objects.create(event=event, title='VIP',      description=fake.text(max_nb_chars=100), price=random.uniform(50,200), ticket_type='paid')
 
         return Response({'status': 'Test data generated', 'accounts': accounts}, status=201)
+
+
+
+
+stripe.api_key = settings.STRIPE_SECRET_KEY
+ENDPOINT_SECRET = settings.STRIPE_WEBHOOK_SECRET
+
+class CreateCheckoutSessionView(views.APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        tier_id = request.data.get('tier_id')
+        try:
+            tier = TicketTier.objects.get(pk=tier_id)
+        except TicketTier.DoesNotExist:
+            return Response({'error': 'Tier not found'}, status=404)
+
+        YOUR_DOMAIN = 'http://localhost:3000'
+        session = stripe.checkout.Session.create(
+            payment_method_types=['card'],
+            line_items=[{
+                'price_data': {
+                    'currency': 'usd',           # или 'uah'
+                    'product_data': {'name': f"{tier.event.title} — {tier.title}"},
+                    'unit_amount': int(tier.price * 100),
+                },
+                'quantity': 1,
+            }],
+            mode='payment',
+            success_url=YOUR_DOMAIN + '/payments/success/?session_id={CHECKOUT_SESSION_ID}',
+            cancel_url=YOUR_DOMAIN + '/payments/cancel/',
+            metadata={
+                'user_id': request.user.id,
+                'event_id': tier.event.id,
+                'tier_id': tier.id,
+            }
+        )
+        return Response({'sessionId': session.id})
+
+@csrf_exempt
+@api_view(['POST'])
+def stripe_webhook(request):
+    payload = request.body
+    sig_header = request.META.get('HTTP_STRIPE_SIGNATURE')
+    try:
+        event = stripe.Webhook.construct_event(payload, sig_header, ENDPOINT_SECRET)
+    except (ValueError, stripe.error.SignatureVerificationError):
+        return Response(status=400)
+
+    if event['type'] == 'checkout.session.completed':
+        session = event['data']['object']
+        meta = session['metadata']
+        user = CustomUser.objects.get(pk=meta['user_id'])
+        tier = TicketTier.objects.get(pk=meta['tier_id'])
+        Registration.objects.create(
+            event=tier.event,
+            participant=user,
+            ticket_tier=tier,
+            paid=True
+        )
+    return Response(status=200)
