@@ -128,9 +128,22 @@ class EventSerializer(serializers.ModelSerializer):
         return instance
 
 class RegistrationSerializer(serializers.ModelSerializer):
-    event       = EventSerializer(read_only=True)
-    ticket_tier = TicketTierSerializer(read_only=True)
+    event           = EventSerializer(read_only=True)
+    ticket_tier     = TicketTierSerializer(read_only=True)
+    participant_name  = serializers.SerializerMethodField()
+    used              = serializers.BooleanField(read_only=True)
+    qr_holder_name  = serializers.CharField(read_only=True)
+    qr_code_url     = serializers.ImageField(source='qr_code', read_only=True)
+    qr_generated_at = serializers.DateTimeField(read_only=True)
     class Meta:
         model = Registration
-        fields = ('id','event','ticket_tier','registered_at','paid')
+        fields = (
+           'id','event','participant_name','ticket_tier','registered_at',
+           'paid','used',
+           'qr_holder_name','qr_code_url','qr_generated_at'
+        )
         read_only_fields = ('registered_at','paid')
+    def get_participant_name(self, obj):
+        full_name = f"{obj.participant.first_name} {obj.participant.last_name}".strip()
+        return full_name if full_name else obj.participant.email
+    

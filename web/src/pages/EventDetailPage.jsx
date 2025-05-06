@@ -19,21 +19,38 @@ import { useSelector } from "react-redux";
 import Sidebar from "../components/Sidebar.jsx";
 import EventForm from "../components/EventForm";
 import { apiEvents } from "../Auth_api.js";
+import BuyTicketButton from "../components/BuyTicketButton";
+import { stripePromise } from "../stripe"; // ← импортируем stripePromise
 
 const drawerWidth = 240;
 
-function BuyTicketModal({ open, onClose, ticketTiers, onPurchase }) {
+function BuyTicketModal({ open, onClose, ticketTiers }) {
   const [selectedTier, setSelectedTier] = useState(null);
   const [error, setError] = useState("");
 
   const handleSelect = (e) =>
     setSelectedTier(ticketTiers.find((t) => t.id === parseInt(e.target.value)));
-  const handlePay = () => {
+  const handlePay = async () => {
     if (!selectedTier) {
       setError("Оберіть тариф");
       return;
     }
-    onPurchase(selectedTier);
+    try {
+      // 1) Создаем Checkout Session на бэкенде
+      const { data } = await apiEvents.post("/create-checkout-session/", {
+        tier_id: selectedTier.id,
+      });
+      // 2) Редиректим на Stripe
+      const stripe = await stripePromise;
+      const { error: stripeError } = await stripe.redirectToCheckout({
+        sessionId: data.sessionId,
+      });
+      if (stripeError) {
+        setError(stripeError.message);
+      }
+    } catch (err) {
+      setError(err.response?.data?.error || err.message);
+    }
   };
 
   return (
@@ -83,7 +100,7 @@ const EventDetailPage = () => {
 
   const [event, setEvent] = useState(null);
   const [buyOpen, setBuyOpen] = useState(false);
-  const [purchaseError, setPurchaseError] = useState("");
+  // const [purchaseError, setPurchaseError] = useState("");
   const [editOpen, setEditOpen] = useState(false);
 
   const isOrganizer =
@@ -103,17 +120,17 @@ const EventDetailPage = () => {
       .catch(console.error);
   }, [id]);
 
-  const handlePurchase = (tier) => {
-    apiEvents
-      .post("/purchase/", { event_id: id, tier_id: tier.id })
-      .then(() => {
-        setBuyOpen(false);
-        navigate("/events/my-registrations");
-      })
-      .catch((err) =>
-        setPurchaseError(err.response?.data?.error || "Помилка покупки")
-      );
-  };
+  // const handlePurchase = (tier) => {
+  //   apiEvents
+  //     .post("/purchase/", { event_id: id, tier_id: tier.id })
+  //     .then(() => {
+  //       setBuyOpen(false);
+  //       navigate("/events/my-registrations");
+  //     })
+  //     .catch((err) =>
+  //       setPurchaseError(err.response?.data?.error || "Помилка покупки")
+  //     );
+  // };
 
   const handleDelete = async () => {
     if (window.confirm("Вы уверены, что хотите удалить событие?")) {
@@ -216,13 +233,11 @@ const EventDetailPage = () => {
             <Typography>Локація: {event.location}</Typography>
           </Box>
         </Box>
-        {purchaseError && <Alert severity="error">{purchaseError}</Alert>}
       </Box>
       <BuyTicketModal
         open={buyOpen}
         onClose={() => setBuyOpen(false)}
         ticketTiers={tiers}
-        onPurchase={handlePurchase}
       />
 
       {/* Модалка редактирования */}

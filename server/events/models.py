@@ -85,12 +85,34 @@ class Registration(models.Model):
     ticket_tier = models.ForeignKey(TicketTier, null=True, blank=True, on_delete=models.SET_NULL)
     registered_at = models.DateTimeField(auto_now_add=True)
     paid = models.BooleanField(default=False)
+    used = models.BooleanField(default=False)  # <-- новый флаг
+    ticket_pdf = models.FileField(upload_to="tickets/", null=True, blank=True)
+    # Новые поля:
+    qr_holder_name = models.CharField(
+        max_length=200, null=True, blank=True,
+        help_text="Имя получателя QR-билета"
+    )
+    qr_code = models.ImageField(
+        upload_to='qr_codes/', null=True, blank=True,
+        help_text="Ссылка на сгенерированный QR-изображение"
+    )
+    qr_generated_at = models.DateTimeField(
+        null=True, blank=True,
+        help_text="Когда сгенерирован QR-билет"
+    )
     def save(self, *args, **kwargs):
         # перед созданием Registration
         if not self.pk and self.ticket_tier.tickets_remaining:
             self.ticket_tier.tickets_remaining -= 1
             self.ticket_tier.save()
+        creating = self.pk is None
         super().save(*args, **kwargs)
+        if creating and self.paid:
+            # после первой записи создаём PDF
+            from .utils import generate_ticket_pdf
+            pdf_file = generate_ticket_pdf(self)       # возвращает Django File-like объект
+            self.ticket_pdf.save(f"ticket_{self.pk}.pdf", pdf_file, save=True)
+        
     
     def __str__(self):
         return f"{self.participant.email} -> {self.event.title}"

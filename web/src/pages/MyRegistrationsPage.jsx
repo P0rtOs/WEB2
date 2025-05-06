@@ -5,7 +5,6 @@ import {
   Typography,
   Grid,
   Card,
-  CardActionArea,
   CardContent,
   CardMedia,
   Button,
@@ -13,13 +12,15 @@ import {
   CircularProgress,
 } from "@mui/material";
 import Sidebar from "../components/Sidebar";
-import { apiEvents } from "../Auth_api.js";
+import GenerateQRModal from "../components/GenerateQRModal.jsx";
+import { apiEvents, openTicketPdf } from "../Auth_api.js";
 
 const drawerWidth = 240;
 
 export default function MyRegistrationsPage() {
   const [registrations, setRegistrations] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [modalReg, setModalReg] = useState(null);
 
   useEffect(() => {
     apiEvents
@@ -28,6 +29,13 @@ export default function MyRegistrationsPage() {
       .catch((err) => console.error(err))
       .finally(() => setLoading(false));
   }, []);
+
+  const handleQRDone = (updated) => {
+    setRegistrations((regs) =>
+      regs.map((r) => (r.id === updated.id ? updated : r))
+    );
+    setModalReg(null);
+  };
 
   if (loading) {
     return (
@@ -46,52 +54,127 @@ export default function MyRegistrationsPage() {
         </Typography>
         <Grid container spacing={2}>
           {registrations.map((reg) => {
-            const event = reg.event;
-            const description =
-              event.description.length > 120
-                ? event.description.slice(0, 120) + "..."
-                : event.description;
+            const {
+              event,
+              qr_code_url,
+              qr_holder_name,
+              qr_generated_at,
+              used,
+            } = reg;
+
             return (
               <Grid item xs={12} sm={6} md={4} key={reg.id}>
                 <Card>
-                  <CardActionArea>
-                    {event.image && (
-                      <CardMedia
-                        component="img"
-                        image={event.image}
-                        alt={event.title}
-                        height={140}
-                      />
-                    )}
-                    <CardContent>
-                      <Typography variant="h5" gutterBottom>
-                        {event.title}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        {description}
-                      </Typography>
-                      <Box
-                        sx={{
-                          mt: 2,
-                          display: "flex",
-                          justifyContent: "center",
-                        }}
+                  {event.image && (
+                    <CardMedia
+                      component="img"
+                      height="140"
+                      image={event.image}
+                      alt={event.title}
+                    />
+                  )}
+                  <CardContent>
+                    <Typography variant="h6" gutterBottom>
+                      {event.title}
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      gutterBottom
+                    >
+                      {event.description.length > 100
+                        ? event.description.slice(0, 100) + "..."
+                        : event.description}
+                    </Typography>
+
+                    {qr_code_url ? (
+                      <>
+                        <Box sx={{ my: 2, textAlign: "center" }}>
+                          <img
+                            src={qr_code_url}
+                            alt="QR код"
+                            style={{ width: 120, height: 120 }}
+                          />
+                        </Box>
+                        <Typography variant="body2">
+                          Для: <strong>{qr_holder_name}</strong>
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          Сгенеровано:{" "}
+                          {new Date(qr_generated_at).toLocaleString()}
+                        </Typography>
+
+                        {used ? (
+                          // Если билет уже использован
+                          <Box sx={{ mt: 2 }}>
+                            <Typography
+                              variant="subtitle1"
+                              color="error"
+                              align="center"
+                            >
+                              ВИКОРИСТАНО
+                            </Typography>
+                          </Box>
+                        ) : (
+                          // Иначе показываем кнопки Скачать/Отметить
+                          <Box sx={{ mt: 2, display: "flex", gap: 1 }}>
+                            <Button
+                              variant="outlined"
+                              size="small"
+                              onClick={() => openTicketPdf(reg.id)}
+                            >
+                              Завантажити PDF
+                            </Button>
+                            <Button
+                              variant="contained"
+                              size="small"
+                              onClick={() =>
+                                apiEvents
+                                  .post(
+                                    `/my-registrations/${reg.id}/mark-used/`
+                                  )
+                                  .then(() =>
+                                    setRegistrations((rs) =>
+                                      rs.map((r) =>
+                                        r.id === reg.id
+                                          ? { ...r, used: true }
+                                          : r
+                                      )
+                                    )
+                                  )
+                              }
+                            >
+                              Позначити використаним
+                            </Button>
+                          </Box>
+                        )}
+                      </>
+                    ) : (
+                      // Ещё нет QR — показываем кнопку генерации
+                      <Button
+                        variant="outlined"
+                        fullWidth
+                        onClick={() => setModalReg(reg)}
                       >
-                        <Button
-                          variant="contained"
-                          onClick={() => alert("QR генератор (заглушка)")}
-                        >
-                          Сгенерувати QR квиток
-                        </Button>
-                      </Box>
-                    </CardContent>
-                  </CardActionArea>
+                        Сгенерувати QR-билет
+                      </Button>
+                    )}
+                  </CardContent>
                 </Card>
               </Grid>
             );
           })}
         </Grid>
       </Container>
+
+      {modalReg && (
+        <GenerateQRModal
+          open
+          registration={modalReg}
+          onClose={() => setModalReg(null)}
+          onDone={handleQRDone}
+        />
+      )}
     </>
   );
 }

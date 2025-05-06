@@ -17,9 +17,7 @@ python-dotenv
 sqlparse
 tzdata
 pillow
-<<<<<<< Updated upstream
-fake
-=======
 faker
 stripe
->>>>>>> Stashed changes
+qrcode
+reportlab
