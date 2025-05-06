@@ -12,11 +12,21 @@ import TicketPurchasePage from "./pages/TicketPurchasePage.jsx";
 import AnalyticsOrganizerPage from "./pages/AnalyticsOrganizerPage.jsx";
 import AnalyticsAdminPage from "./pages/AnalyticsAdminPage.jsx";
 import MyRegistrationsPage from "./pages/MyRegistrationsPage.jsx";
+import PaymentsSuccess from "./pages/PaymentsSuccess";
+import PaymentsCancel from "./pages/PaymentsCancel";
+import TicketViewPage from "./pages/TicketViewPage";
 import "./css/Main.scss";
 
 import { useDispatch } from "react-redux";
 import { setCurrentUser, clearCurrentUser } from "./features/authSlice";
-import { getUserProfile } from "./Auth_api.js";
+import { getUserProfile, setAuthToken } from "./Auth_api.js";
+
+// 1) достаём токен из localStorage
+const token = localStorage.getItem("accessToken");
+// 2) сразу ставим его в заголовки
+if (token) {
+  setAuthToken(token);
+}
 
 // Добавляем этот компонент для загрузки профиля
 function LoadCurrentUser() {
@@ -52,6 +62,9 @@ function App() {
           element={<AnalyticsOrganizerPage />}
         />
         <Route path="/analytics/admin" element={<AnalyticsAdminPage />} />
+        <Route path="/payments/success" element={<PaymentsSuccess />} />
+        <Route path="/payments/cancel" element={<PaymentsCancel />} />
+        <Route path="/tickets/:id/view" element={<TicketViewPage />} />
       </Routes>
     </Router>
   );

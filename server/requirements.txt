@@ -17,4 +17,7 @@ python-dotenv
 sqlparse
 tzdata
 pillow
-fake
+faker
+stripe
+qrcode
+reportlab

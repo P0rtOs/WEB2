@@ -34,6 +34,14 @@ export const setAuthToken = (token) => {
 let isRefreshing = false;
 let failedQueue = [];
 
+export const generateQR = async (registrationId, holderName) => {
+  const res = await apiEvents.post(
+    `/my-registrations/${registrationId}/generate-qr/`,
+    { qr_holder_name: holderName }
+  );
+  return res.data;
+};
+
 const processQueue = (error, token = null) => {
   failedQueue.forEach((prom) => {
     if (error) {
@@ -137,6 +145,17 @@ export const registerUser = async (email, password, navigate) => {
     throw error;
   }
 };
+
+export async function openTicketPdf(regId) {
+  // responseType: 'blob' гарантирует, что axios отдаст вам бинарный blob
+  const resp = await apiEvents.get(`/my-registrations/${regId}/ticket/`, {
+    responseType: "blob",
+  });
+  // создаём временный URL
+  const blobUrl = window.URL.createObjectURL(resp.data);
+  // открываем его
+  window.open(blobUrl, "_blank");
+}
 
 // Получение профиля пользователя
 export const getUserProfile = async () => {

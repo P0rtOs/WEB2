@@ -28,6 +28,9 @@ venv\Scripts\activate.bat
 python manage.py migrate
 python manage.py runserver
 
+cd web
+stripe listen --forward-to localhost:8000/api/events/webhook/
+
 
 
 // in main root:
