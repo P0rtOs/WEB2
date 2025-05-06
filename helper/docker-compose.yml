@@ -1,14 +1,15 @@
-version: '3.8'
-
+version: "3.8"
 services:
-  db:
+  postgres-container:
     image: postgres:15
-    restart: always
-    env_file: .env
+    container_name: postgres-container-test
+    environment:
+      POSTGRES_DB: db_name
+      POSTGRES_USER: db_user
+      POSTGRES_PASSWORD: db_password
     ports:
-      - "5432:5432"
+      - "5434:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
-
+      - pgdata:/var/lib/postgresql/data
 volumes:
-  postgres_data:
+  pgdata:

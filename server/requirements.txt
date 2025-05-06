@@ -21,3 +21,7 @@ faker
 stripe
 qrcode
 reportlab
+coverage
+pytest
+pytest-django 
+pact-python

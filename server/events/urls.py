@@ -1,5 +1,21 @@
 from django.urls import path
-from .views import  EventByTypeView, EventListCreateView, EventDetailView, TicketPurchaseView, AdminAnalyticsView, OrganizerAnalyticsView, MyRegistrationsView, MyEventsView, TestDataGenerateView
+from .views import (
+    EventListCreateView,
+    EventDetailView,
+    TicketPurchaseView,
+    OrganizerAnalyticsView,
+    AdminAnalyticsView,
+    MyRegistrationsView,
+    MyEventsView,
+    TestDataGenerateView,
+    CreateCheckoutSessionView,
+    stripe_webhook,
+    GenerateQRView,
+    TicketDownloadView,
+    TicketMarkUsedView,
+    TicketViewAPIView,
+    EventByTypeView
+)
 
 
 
@@ -15,7 +31,7 @@ urlpatterns = [
     path('analytics/organizer/',        OrganizerAnalyticsView.as_view(),       name='organizer-analytics'),
     path('analytics/admin/',            AdminAnalyticsView.as_view(),           name='admin-analytics'),
     path('generate-test-data/',         TestDataGenerateView.as_view(),         name='generate-test-data'),
-    path('by-type/',                EventByTypeView.as_view(),          name='event-by-type'),
+    path('by-type/',                    EventByTypeView.as_view(),          name='event-by-type'),
     path('create-checkout-session/',    CreateCheckoutSessionView.as_view(),    name='create-checkout-session'),
     path('webhook/',                    stripe_webhook,                         name='stripe-webhook'),
     path('tickets/<int:pk>/view/',      TicketViewAPIView.as_view(),            name='ticket-view'),

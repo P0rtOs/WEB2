@@ -1,0 +1,35 @@
+{
+  "consumer": {
+    "name": "AnalyticsClient"
+  },
+  "provider": {
+    "name": "Service"
+  },
+  "interactions": [
+    {
+      "description": "get organizer analytics",
+      "providerState": "analytics available",
+      "request": {
+        "method": "GET",
+        "path": "/api/events/analytics/organizer/"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+        },
+        "body": [
+          {
+            "event_id": 1,
+            "event_title": "X",
+            "registrations_count": 3
+          }
+        ]
+      }
+    }
+  ],
+  "metadata": {
+    "pactSpecification": {
+      "version": "2.0.0"
+    }
+  }
+}
