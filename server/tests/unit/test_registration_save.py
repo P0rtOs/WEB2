@@ -6,7 +6,6 @@ User = get_user_model()
 
 @pytest.mark.django_db
 def test_registration_decrements_tickets_remaining():
-    # Створення тестового користувача
     user = User.objects.create_user(email='user2@example.com', password='pass')
     event = Event.objects.create(
         title='X', description='Y', start_date='2025-06-02T12:00:00Z'

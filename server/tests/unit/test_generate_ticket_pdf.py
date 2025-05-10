@@ -9,7 +9,6 @@ User = get_user_model()
 @pytest.mark.django_db
 @pytest.mark.parametrize('paid', [True, False])
 def test_generate_ticket_pdf_returns_pdf(paid):
-    # Створення тестового користувача для participant
     user = User.objects.create_user(email='test@example.com', password='pass')
     event = Event.objects.create(
         title='E', description='D', start_date='2025-06-01T10:00:00Z'
