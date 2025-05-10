@@ -20,6 +20,7 @@ import Sidebar from "../components/Sidebar.jsx";
 import EventForm from "../components/EventForm";
 import { apiEvents } from "../Auth_api.js";
 import BuyTicketButton from "../components/BuyTicketButton";
+import EventAnalyticsChart from "../components/EventAnalyticsChart.jsx";
 import { stripePromise } from "../stripe"; // ← импортируем stripePromise
 
 const drawerWidth = 240;
@@ -234,6 +235,11 @@ const EventDetailPage = () => {
           </Box>
         </Box>
       </Box>
+
+      <Typography variant="h5" gutterBottom>
+        Статистика продаж
+      </Typography>
+      <EventAnalyticsChart eventId={event.id} period="day" />
       <BuyTicketModal
         open={buyOpen}
         onClose={() => setBuyOpen(false)}

@@ -4,7 +4,7 @@ from rest_framework import generics, status, views
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from .serializers import UserRegistrationSerializer, GoogleAuthSerializer, CustomUserSerializer  
-from rest_framework.permissions import IsAuthenticated, IsAdminUser
+from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny
 
 User = get_user_model()
 
@@ -12,6 +12,7 @@ class UserRegistrationView(generics.CreateAPIView):
     serializer_class = UserRegistrationSerializer
 
 class UserLoginView(views.APIView):
+    permission_classes = [AllowAny]
     def post(self, request, *args, **kwargs):
         email = request.data.get('email')
         password = request.data.get('password')
@@ -42,6 +43,7 @@ class GoogleLoginView(views.APIView):
     Принимает id_token от Google, проверяет его, создаёт или получает пользователя
     и возвращает JWT токены.
     """
+    permission_classes = [AllowAny]
     def post(self, request):
         token = request.data.get("token")
         if not token:

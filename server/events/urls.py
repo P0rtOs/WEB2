@@ -1,11 +1,11 @@
 from django.urls import path
-from .views import EventListCreateView, EventDetailView, TicketPurchaseView,AdminAnalyticsView, OrganizerAnalyticsView, MyRegistrationsView,MyEventsView, TestDataGenerateView, CreateCheckoutSessionView,stripe_webhook, GenerateQRView, TicketDownloadView, TicketMarkUsedView, TicketViewAPIView
-
+from .views import EventSalesAnalyticsView, EventListCreateView, EventDetailView, TicketPurchaseView,AdminAnalyticsView, OrganizerAnalyticsView, MyRegistrationsView,MyEventsView, TestDataGenerateView, CreateCheckoutSessionView,stripe_webhook, GenerateQRView, TicketDownloadView, TicketMarkUsedView, TicketViewAPIView
+from rest_framework.permissions import AllowAny
 
 
 urlpatterns = [
     path('',                            EventListCreateView.as_view(),          name='event-list'),
-    path('<int:pk>/',                   EventDetailView.as_view(),              name='event-detail'),
+    path('<int:pk>/',                   EventDetailView.as_view(permission_classes=[AllowAny]),              name='event-detail'),
     path('purchase/',                   TicketPurchaseView.as_view(),           name='ticket-purchase'),
     path('my-registrations/',           MyRegistrationsView.as_view(),          name='my-registrations'),
     path('my-registrations/<int:pk>/generate-qr/', GenerateQRView.as_view(),    name='generate-qr'),
@@ -18,5 +18,6 @@ urlpatterns = [
     path('create-checkout-session/',    CreateCheckoutSessionView.as_view(),    name='create-checkout-session'),
     path('webhook/',                    stripe_webhook,                         name='stripe-webhook'),
     path('tickets/<int:pk>/view/',      TicketViewAPIView.as_view(),            name='ticket-view'),
+    path('<int:event_id>/analytics/', EventSalesAnalyticsView.as_view(), name='event-analytics'),
 
 ]

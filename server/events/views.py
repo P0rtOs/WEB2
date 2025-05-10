@@ -1,4 +1,6 @@
-from rest_framework import generics, permissions, views, status
+from rest_framework import generics, permissions, views, status, serializers
+from django.db.models import Sum, Count, F, DecimalField
+from django.db.models.functions import TruncDay, TruncHour
 from rest_framework.parsers import MultiPartParser, FormParser
 from .models import Event, TicketTier, Registration
 from .serializers import EventSerializer, RegistrationSerializer
@@ -287,9 +289,69 @@ class TicketViewAPIView(generics.RetrieveAPIView):
     serializer_class = RegistrationSerializer
     permission_classes = [permissions.AllowAny]
 
+class SalesPointSerializer(serializers.Serializer):
+    period    = serializers.CharField()   # например "2025-05-01" или "2025-05-01T14"
+    tickets   = serializers.IntegerField()
+    revenue   = serializers.DecimalField(max_digits=12, decimal_places=2)
+
+class EventSalesAnalyticsView(views.APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, event_id):
+        # проверяем, что пользователь — организатор или админ
+        try:
+            event = Event.objects.get(pk=event_id)
+        except Event.DoesNotExist:
+            return Response({"detail":"Event not found"}, status=404)
+
+        user = request.user
+        if not (user.is_staff or event.organizer == user):
+            return Response({"detail":"Forbidden"}, status=403)
+
+        # параметры
+        period    = request.query_params.get("period","day")
+        df        = request.query_params.get("date_from")
+        dt        = request.query_params.get("date_to")
+
+        qs = Registration.objects.filter(
+            event=event, paid=True
+        )
+        if df:
+            qs = qs.filter(registered_at__date__gte=df)
+        if dt:
+            qs = qs.filter(registered_at__date__lte=dt)
+
+        if period=="hour":
+            trunc = TruncHour("registered_at")
+        else:
+            trunc = TruncDay("registered_at")
+
+        agg = (qs
+            .annotate(period=trunc)
+            .values("period")
+            .annotate(
+                tickets = Count("id"),
+                revenue = Sum(F("ticket_tier__price"), output_field=DecimalField())
+            )
+            .order_by("period")
+        )
+        data = [{
+            "period": x["period"].isoformat(),
+            "tickets": x["tickets"],
+            "revenue": float(x["revenue"] or 0)
+        } for x in agg]
+
+        # отправляем вместе с общим итогом
+        summary = {
+            "total_tickets": sum(d["tickets"] for d in data),
+            "total_revenue": sum(d["revenue"] for d in data),
+        }
+        return Response({"summary": summary, "series": data}, status=200)
+
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
 ENDPOINT_SECRET = settings.STRIPE_WEBHOOK_SECRET
+
 
 class CreateCheckoutSessionView(views.APIView):
     permission_classes = [permissions.IsAuthenticated]
