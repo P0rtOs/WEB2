@@ -8,6 +8,7 @@ import UserTypeCheck from "../test_components/CheckUserType.jsx";
 import ToggleAdminButton from "../test_components/ToggleAdminButton";
 import TestDataGenerator from "../test_components/TestDataGenerate.jsx";
 import Calendar from "../components/Calendar.jsx";
+import Chart from "../components/BigCharts.jsx";
 const drawerWidth = 240;
 
 const TestPage = () => {
@@ -28,6 +29,9 @@ const TestPage = () => {
         <TestDataGenerator />
       </Container>
       < Calendar />
+      <div style={{ height: 400, margin: "2rem" }}>
+      <Chart />
+      </div>
     </>
   );
 };
