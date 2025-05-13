@@ -167,14 +167,16 @@ class MyEventsView(generics.ListAPIView):
 
 
 class TestDataGenerateView(views.APIView):
+    """Генерирует тестовые данные: организаторов, клиентов, события и регистрации (покупки билетов)."""
     permission_classes = [IsAdminUser]
 
     def post(self, request, *args, **kwargs):
         fake = Faker()
         password = 'TestPass123'
-        # Создаем 10 организаторов
+        accounts = []  # список учетных данных для вывода
+
+        # 1) Создаем организаторов
         organizers = []
-        accounts = []  # список учётных данных
         for _ in range(10):
             email = fake.unique.email()
             user = CustomUser.objects.create_user(
@@ -185,50 +187,88 @@ class TestDataGenerateView(views.APIView):
             organizers.append(user)
             accounts.append({'email': email, 'password': password})
 
+        # 2) Создаем клиентов
+        clients = []
+        for _ in range(50):
+            email = fake.unique.email()
+            user = CustomUser.objects.create_user(
+                email=email,
+                password=password,
+                user_type='client'
+            )
+            clients.append(user)
+            accounts.append({'email': email, 'password': password})
+
         event_types = [choice[0] for choice in Event.EVENT_TYPES]
-        # Для каждого организатора создаем 5 событий
+
+        # 3) Для каждого организатора создаем события и покупки билетов
         for org in organizers:
             for _ in range(5):
-                title       = fake.sentence(nb_words=6)
-                location    = fake.city()
-                description = "\n\n".join(fake.paragraphs(nb=3))
-                start_date = fake.date_time_between(start_date='-30d', end_date='now', tzinfo=datetime.timezone.utc)
-                end_date   = start_date + datetime.timedelta(hours=random.randint(1,8))
-                event_type  = random.choice(event_types)
                 # Создаем событие
+                start_date = fake.date_time_between(start_date='-30d', end_date='now', tzinfo=datetime.timezone.utc)
+                end_date = start_date + datetime.timedelta(hours=random.randint(1, 8))
                 event = Event.objects.create(
-                    title=title,
-                    description=description,
-                    location=location,
+                    title=fake.sentence(nb_words=6),
+                    description="\n\n".join(fake.paragraphs(nb=3)),
+                    location=fake.city(),
                     start_date=start_date,
                     end_date=end_date,
                     organizer=org,
-                    event_type=event_type
+                    event_type=random.choice(event_types)
                 )
-                # Спикеры
-                for __ in range(random.randint(1,3)):
+
+                # Спикеры, спонсоры, программа
+                for __ in range(random.randint(1, 3)):
                     sp, _ = Speaker.objects.get_or_create(
-                        name=fake.name(),
-                        bio=fake.text(max_nb_chars=200)
+                        name=fake.name(), bio=fake.text(max_nb_chars=200)
                     )
                     event.speakers.add(sp)
-                # Спонсоры
-                for __ in range(random.randint(1,2)):
+                for __ in range(random.randint(1, 2)):
                     sp, _ = Sponsor.objects.get_or_create(
-                        name=fake.company(),
-                        website=fake.url()
+                        name=fake.company(), website=fake.url()
                     )
                     event.sponsors.add(sp)
-                # Программа
-                for __ in range(random.randint(1,4)):
+                for __ in range(random.randint(1, 4)):
                     pi, _ = ProgramItem.objects.get_or_create(
-                        title=fake.sentence(nb_words=4),
-                        description=fake.text(max_nb_chars=100)
+                        title=fake.sentence(nb_words=4), description=fake.text(max_nb_chars=100)
                     )
                     event.program_items.add(pi)
-                # Тарифы (пример)
-                TicketTier.objects.create(event=event, title='Standard', description=fake.text(max_nb_chars=100), price=random.uniform(10,100), ticket_type='paid')
-                TicketTier.objects.create(event=event, title='VIP',      description=fake.text(max_nb_chars=100), price=random.uniform(50,200), ticket_type='paid')
+
+                # Тарифы
+                for tier_name in ['Standard', 'VIP']:
+                    price = random.uniform(10, 200)
+                    tier = TicketTier.objects.create(
+                        event=event,
+                        title=tier_name,
+                        description=fake.text(max_nb_chars=100),
+                        price=price,
+                        ticket_type='paid'
+                    )
+
+                    # Генерируем покупки для этого тарифа
+                    # Выбираем случайных клиентов для покупки
+                    buyers = random.sample(clients, k=random.randint(0, len(clients)))
+                    for buyer in buyers[:random.randint(0, 20)]:
+                        # Выбираем случайную дату покупки между созданием события и сейчас
+                        purchase_date = fake.date_time_between(
+                            start_date=event.start_date - datetime.timedelta(days=30),
+                            end_date=min(event.end_date, datetime.datetime.now(datetime.timezone.utc)),
+                            tzinfo=datetime.timezone.utc
+                        )
+                        # Флаг использования билета: только если событие уже прошло
+                        used_flag = purchase_date < datetime.datetime.now(datetime.timezone.utc) and bool(random.getrandbits(1))
+
+                        # Создаем регистрацию
+                        reg = Registration(
+                            event=event,
+                            participant=buyer,
+                            ticket_tier=tier,
+                            paid=True
+                        )
+                        # Устанавливаем дату регистрации и статус использования
+                        reg.registered_at = purchase_date
+                        reg.used = used_flag
+                        reg.save()
 
         return Response({'status': 'Test data generated', 'accounts': accounts}, status=201)
 
@@ -342,9 +382,11 @@ class EventSalesAnalyticsView(views.APIView):
         } for x in agg]
 
         # отправляем вместе с общим итогом
+        used_count = qs.filter(used=True).count()
         summary = {
             "total_tickets": sum(d["tickets"] for d in data),
             "total_revenue": sum(d["revenue"] for d in data),
+            "used_tickets": used_count,
         }
         return Response({"summary": summary, "series": data}, status=200)
 

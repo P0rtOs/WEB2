@@ -37,6 +37,18 @@ export default function EventAnalyticsChart({ eventId, period = "day" }) {
 
   return (
     <ResponsiveContainer width="100%" height={300}>
+      <h2 className="text-xl font-semibold mb-3">Аналитика события</h2>
+      <p>
+        Продано билетов: <strong>{summary.total_tickets}</strong>
+      </p>
+      <p>
+        Выручка: <strong>{summary.total_revenue} грн</strong>
+      </p>
+      {isPast && summary.used_tickets !== undefined && (
+        <p>
+          Использовано билетов: <strong>{summary.used_tickets}</strong>
+        </p>
+      )}
       <LineChart data={data}>
         <XAxis dataKey="label" />
         <YAxis />

@@ -51,6 +51,7 @@ ALLOWED_HOSTS = []
 INSTALLED_APPS = [
     'users',       # наше приложение для пользователей
     'events',      # приложение для событий
+    'analytics',
 
 
 
