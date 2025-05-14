@@ -15,6 +15,7 @@ import MyRegistrationsPage from "./pages/MyRegistrationsPage.jsx";
 import PaymentsSuccess from "./pages/PaymentsSuccess";
 import PaymentsCancel from "./pages/PaymentsCancel";
 import TicketViewPage from "./pages/TicketViewPage";
+import AdminReportsPage from "./pages/AdminReportsPage";
 import "./css/Main.scss";
 
 import { useDispatch } from "react-redux";
@@ -65,6 +66,7 @@ function App() {
         <Route path="/payments/success" element={<PaymentsSuccess />} />
         <Route path="/payments/cancel" element={<PaymentsCancel />} />
         <Route path="/tickets/:id/view" element={<TicketViewPage />} />
+        <Route path="/admin/reports" component={<AdminReportsPage />} />
       </Routes>
     </Router>
   );

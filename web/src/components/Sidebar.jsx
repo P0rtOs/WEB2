@@ -83,6 +83,11 @@ const Sidebar = () => {
               to: "/analytics/admin",
             },
             {
+              text: "Admin Reports",
+              icon: <BarChartIcon />,
+              to: "/admin/reports",
+            },
+            {
               text: "Organizer Analytics",
               icon: <TimelineIcon />,
               to: "/analytics/organizer",
