@@ -12,13 +12,13 @@ import TicketPurchasePage from "./pages/TicketPurchasePage.jsx";
 import AnalyticsOrganizerPage from "./pages/AnalyticsOrganizerPage.jsx";
 import AnalyticsAdminPage from "./pages/AnalyticsAdminPage.jsx";
 import MyRegistrationsPage from "./pages/MyRegistrationsPage.jsx";
+import CalendarPage from "./pages/CalendarPage.jsx";  // <-- Імпорт сторінки календаря
 import "./css/Main.scss";
 
 import { useDispatch } from "react-redux";
 import { setCurrentUser, clearCurrentUser } from "./features/authSlice";
 import { getUserProfile } from "./Auth_api.js";
 
-// Добавляем этот компонент для загрузки профиля
 function LoadCurrentUser() {
   const dispatch = useDispatch();
   useEffect(() => {
@@ -43,15 +43,10 @@ function App() {
         <Route path="/add-event" element={<AddEventPage />} />
         <Route path="/events/:id" element={<EventDetailPage />} />
         <Route path="/purchase-ticket/:id" element={<TicketPurchasePage />} />
-        <Route
-          path="/events/my-registrations"
-          element={<MyRegistrationsPage />}
-        />
-        <Route
-          path="/analytics/organizer"
-          element={<AnalyticsOrganizerPage />}
-        />
+        <Route path="/events/my-registrations" element={<MyRegistrationsPage />} />
+        <Route path="/analytics/organizer" element={<AnalyticsOrganizerPage />} />
         <Route path="/analytics/admin" element={<AnalyticsAdminPage />} />
+        <Route path="/calendar" element={<CalendarPage />} />  {/* <-- Доданий маршрут */}
       </Routes>
     </Router>
   );

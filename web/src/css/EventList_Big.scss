@@ -3,7 +3,8 @@
   transition: all 0.3s ease;
 
   &.expanded {
-    width: 100%;
+    width: 120%;
+    margin-left: -10%;
     height: calc(100vh - 40px);
     overflow-y: auto;
     background-color: #f8f9fa;

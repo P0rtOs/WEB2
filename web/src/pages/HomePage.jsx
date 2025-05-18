@@ -57,11 +57,13 @@ const HomePage = () => {
             </Grid>
           )}
         </Grid>
-
-        {/* Здесь разворачиваем список карточек в одну колонку */}
-        {events.map((event) => (
-          <EventCard key={event.id} event={event} />
-        ))}
+        <Grid container spacing={2}>
+          {events.map((event) => (
+            <Grid item xs={12} sm={6} md={4} key={event.id}>
+              <EventCard event={event} />
+            </Grid>
+          ))}
+        </Grid>
       </Container>
     </>
   );
