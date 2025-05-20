@@ -59,6 +59,7 @@ const addAuthInterceptor = (instance) => {
     (response) => response,
     async (error) => {
       const originalRequest = error.config;
+
       if (
         error.response &&
         error.response.status === 401 &&
@@ -66,6 +67,7 @@ const addAuthInterceptor = (instance) => {
         !originalRequest.url.includes("/token/refresh/")
       ) {
         originalRequest._retry = true;
+
         if (isRefreshing) {
           return new Promise((resolve, reject) => {
             failedQueue.push({ resolve, reject });
@@ -76,26 +78,37 @@ const addAuthInterceptor = (instance) => {
             })
             .catch((err) => Promise.reject(err));
         }
+
         isRefreshing = true;
+
         try {
           const refresh = localStorage.getItem("refreshToken");
-          if (!refresh) {
-            throw new Error("No refresh token available");
-          }
+          if (!refresh) throw new Error("No refresh token available");
+
           const { data } = await apiAuth.post("/token/refresh/", { refresh });
           const newToken = data.access;
+
           localStorage.setItem("accessToken", newToken);
           setAuthToken(newToken);
           processQueue(null, newToken);
+
           originalRequest.headers["Authorization"] = "Bearer " + newToken;
           return instance(originalRequest);
         } catch (err) {
           processQueue(err, null);
+
+          // 👉 Очистка токенів та localStorage
+          localStorage.removeItem("accessToken");
+          localStorage.removeItem("refreshToken");
+          setAuthToken(null);
+          store.dispatch(clearCurrentUser());
+
           return Promise.reject(err);
         } finally {
           isRefreshing = false;
         }
       }
+
       return Promise.reject(error);
     }
   );
