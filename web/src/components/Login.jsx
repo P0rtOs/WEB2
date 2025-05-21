@@ -1,7 +1,7 @@
 // src/components/Login.jsx
 import React, { useState } from "react";
 import { useNavigate } from "react-router";
-import { loginUser, getUserProfile } from "../Auth_api.js";
+import { loginUser, getUserProfile } from "../Auth_api";
 import GoogleAuth from "./GoogleAuth.jsx";
 import { useDispatch } from "react-redux";
 import { setCurrentUser } from "../features/authSlice";
@@ -32,6 +32,7 @@ const Login = ({ onClose }) => {
     localStorage.setItem("refreshToken", data.refresh);
     const profileResponse = await getUserProfile();
     dispatch(setCurrentUser(profileResponse.data));
+    if (onClose) onClose();
     navigate("/");
   };
 

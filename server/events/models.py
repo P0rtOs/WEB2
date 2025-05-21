@@ -29,9 +29,9 @@ class Event(models.Model):
     description = models.TextField()
     location = models.CharField(
         max_length=255,     
-        null=True,          # разрешаем null временно
-        blank=True          # разрешаем пустое значение в формах
-    )  # Новое поле для места проведения
+        null=True,         
+        blank=True         
+    ) 
     start_date = models.DateTimeField()
     end_date = models.DateTimeField(null=True, blank=True)
     image = models.ImageField(upload_to='event_images/', null=True, blank=True)
@@ -39,8 +39,8 @@ class Event(models.Model):
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name='organized_events',
-        null=True,          # разрешаем null временно
-        blank=True          # разрешаем пустое значение в формах
+        null=True,         
+        blank=True         
     )
     speakers = models.ManyToManyField(Speaker, blank=True)
     sponsors = models.ManyToManyField(Sponsor, blank=True)
@@ -74,7 +74,7 @@ class TicketTier(models.Model):
     description = models.TextField(blank=True)
     price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     ticket_type = models.CharField(max_length=20, choices=TICKET_TYPES, default='paid')
-    tickets_remaining = models.PositiveIntegerField(default=100)  # Новое поле для отслеживания оставшихся билетов
+    tickets_remaining = models.PositiveIntegerField(default=100) 
 
     def __str__(self):
         return f"{self.title} ({self.ticket_type})"
@@ -85,9 +85,8 @@ class Registration(models.Model):
     ticket_tier = models.ForeignKey(TicketTier, null=True, blank=True, on_delete=models.SET_NULL)
     registered_at = models.DateTimeField(auto_now_add=True)
     paid = models.BooleanField(default=False)
-    used = models.BooleanField(default=False)  # <-- новый флаг
+    used = models.BooleanField(default=False) 
     ticket_pdf = models.FileField(upload_to="tickets/", null=True, blank=True)
-    # Новые поля:
     qr_holder_name = models.CharField(
         max_length=200, null=True, blank=True,
         help_text="Имя получателя QR-билета"
@@ -101,16 +100,14 @@ class Registration(models.Model):
         help_text="Когда сгенерирован QR-билет"
     )
     def save(self, *args, **kwargs):
-        # перед созданием Registration
         if not self.pk and self.ticket_tier.tickets_remaining:
             self.ticket_tier.tickets_remaining -= 1
             self.ticket_tier.save()
         creating = self.pk is None
         super().save(*args, **kwargs)
         if creating and self.paid:
-            # после первой записи создаём PDF
             from .utils import generate_ticket_pdf
-            pdf_file = generate_ticket_pdf(self)       # возвращает Django File-like объект
+            pdf_file = generate_ticket_pdf(self)     
             self.ticket_pdf.save(f"ticket_{self.pk}.pdf", pdf_file, save=True)
         
     

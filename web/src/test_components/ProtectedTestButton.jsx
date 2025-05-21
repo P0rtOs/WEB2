@@ -1,18 +1,18 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router';
-import { getUserProfile } from '../Auth_api.js';
+import React, { useState } from "react";
+import { useNavigate } from "react-router";
+import { getUserProfile } from "../Auth_api";
 
 const ProtectedButton = () => {
-  const [message, setMessage] = useState('');
+  const [message, setMessage] = useState("");
   const navigate = useNavigate();
 
   const handleClick = async () => {
     try {
       // Calling a protected endpoint
       await getUserProfile();
-      setMessage('ВСЕ ГУД');
+      setMessage("ВСЕ ГУД");
     } catch (error) {
-      setMessage('НЕМА ТОКЕНА');
+      setMessage("НЕМА ТОКЕНА");
       // Optionally, redirect to login if the token refresh fails:
       // navigate("/login");
     }

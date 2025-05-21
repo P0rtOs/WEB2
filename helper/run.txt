@@ -12,6 +12,9 @@ pip install -r requirements.txt
 
 docker pull postgres:latest
 docker run --name postgres-container -e POSTGRES_USER=db_user -e POSTGRES_PASSWORD=db_password -e POSTGRES_DB=db_name -p 5432:5432 -d postgres
+docker run --name redis-container -p 6379:6379 -d redis:latest
+docker run --name celery-worker --link redis-container:redis -v 'C:\Users\Fr0ndeur\Desktop\3_year_2_semestr\WEB2\server:/app' -w /app python:3.11-slim bash -c "pip install --no-cache-dir -r requirements.txt && celery -A server worker --loglevel=info"
+
 
 timeout /t 5  # (замість sleep 5, бо це Windows)
 

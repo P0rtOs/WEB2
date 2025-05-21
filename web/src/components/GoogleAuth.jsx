@@ -1,7 +1,7 @@
 // GoogleAuth.jsx
 import React from "react";
 import { GoogleLogin } from "@react-oauth/google";
-import { googleLogin } from "../Auth_api.js"; // импортируем нашу функцию
+import { googleLogin } from "../Auth_api";
 
 const GoogleAuth = ({ onLoginSuccess }) => {
   const handleSuccess = async (credentialResponse) => {

@@ -8,7 +8,6 @@ class NestedListField(serializers.Field):
         self.child_serializer = child_serializer
 
     def to_internal_value(self, data):
-        # JSON coming as string from FormData
         if isinstance(data, str):
             try:
                 return json.loads(data)
@@ -19,7 +18,6 @@ class NestedListField(serializers.Field):
         raise serializers.ValidationError("Expected a list of items.")
 
     def to_representation(self, value):
-        # value is a queryset or list of model-instances
         return self.child_serializer(value, many=True).data
 
 class TicketTierSerializer(serializers.ModelSerializer):
@@ -27,7 +25,6 @@ class TicketTierSerializer(serializers.ModelSerializer):
         model = TicketTier
         fields = ('id', 'title', 'description', 'price', 'ticket_type', 'tickets_remaining')
 
-# Кастомое поле для обработки вложенного JSON из FormData
 class TicketTierJSONField(serializers.Field):
     def to_internal_value(self, data):
         if isinstance(data, str):
@@ -110,21 +107,48 @@ class EventSerializer(serializers.ModelSerializer):
         if spk_data is not None:
             instance.speakers.clear()
             for sp in spk_data:
-                obj, _ = Speaker.objects.get_or_create(**sp)
+                sp_copy = sp.copy()
+                speaker_id = sp_copy.pop('id', None)
+
+                if speaker_id:
+                    obj = Speaker.objects.get(pk=speaker_id)
+                    for attr, val in sp_copy.items():
+                        setattr(obj, attr, val)
+                    obj.save()
+                else:
+                    obj, _ = Speaker.objects.get_or_create(**sp_copy)
+
                 instance.speakers.add(obj)
 
         if spon_data is not None:
             instance.sponsors.clear()
             for s in spon_data:
-                obj, _ = Sponsor.objects.get_or_create(**s)
+                s_copy = s.copy()
+                s_id = s_copy.pop('id', None)
+                if s_id:
+                    obj = Sponsor.objects.get(pk=s_id)
+                    for field, value in s_copy.items():
+                        setattr(obj, field, value)
+                    obj.save()
+                else:
+                    obj, _ = Sponsor.objects.get_or_create(**s_copy)
                 instance.sponsors.add(obj)
 
         if prog_data is not None:
             instance.program_items.clear()
             for p in prog_data:
-                obj, _ = ProgramItem.objects.get_or_create(**p)
+                p_copy = p.copy()
+                p_id = p_copy.pop('id', None)
+                if p_id:
+                    obj = ProgramItem.objects.get(pk=p_id)
+                    for field, value in p_copy.items():
+                        setattr(obj, field, value)
+                    obj.save()
+                else:
+                    obj, _ = ProgramItem.objects.get_or_create(**p_copy)
                 instance.program_items.add(obj)
 
+        instance.save()
         return instance
 
 class RegistrationSerializer(serializers.ModelSerializer):

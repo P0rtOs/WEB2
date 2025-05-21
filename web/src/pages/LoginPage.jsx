@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import Login from "../components/Login.jsx";
 import { useNavigate } from "react-router";
-import { loginUser } from "../Auth_api.js";
+import { loginUser } from "../Auth_api";
 import "../css/Login.scss";
 
 const LoginPage = () => {

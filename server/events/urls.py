@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import EventSalesAnalyticsView,  EventByTypeView, EventListCreateView, EventDetailView, TicketPurchaseView, AdminAnalyticsView, OrganizerAnalyticsView, MyRegistrationsView, MyEventsView, TestDataGenerateView
+from .views import TicketViewAPIView, stripe_webhook, CreateCheckoutSessionView, TicketMarkUsedView, TicketDownloadView, GenerateQRView, EventSalesAnalyticsView,  EventByTypeView, EventListCreateView, EventDetailView, TicketPurchaseView, AdminAnalyticsView, OrganizerAnalyticsView, MyRegistrationsView, MyEventsView, TestDataGenerateView
 from rest_framework.permissions import AllowAny
 
 

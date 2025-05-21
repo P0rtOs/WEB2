@@ -1,4 +1,3 @@
-# server/events/utils.py
 import qrcode
 from io import BytesIO
 from django.core.files.base import ContentFile
@@ -13,12 +12,10 @@ from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfbase.pdfmetrics import stringWidth
 import os
 
-# Зарегистрируем шрифт один раз
 FONT_PATH = os.path.join(os.path.dirname(__file__), "fonts", "DejaVuSans.ttf")
 pdfmetrics.registerFont(TTFont("DejaVuSans", FONT_PATH))
 
 def _wrap_text(text, fontname, fontsize, max_width):
-    """Разбивает строку на несколько по ширине max_width."""
     words = text.split()
     lines, current = [], ""
     for word in words:
@@ -38,14 +35,12 @@ def generate_ticket_pdf(registration):
     c = canvas.Canvas(buffer, pagesize=A4)
     page_width, page_height = A4
 
-    # 1) QR-код
     ticket_url = settings.FRONTEND_URL + f"/tickets/{registration.pk}/view"
     qr = qrcode.make(ticket_url)
     qr_io = BytesIO(); qr.save(qr_io, format="PNG"); qr_io.seek(0)
     img = ImageReader(qr_io)
     c.drawImage(img, 40, page_height - 240, width=200, height=200)
 
-    # 2) Заголовок события с переносом
     x_text = 260
     y = page_height - 80
     title_font, title_size = "DejaVuSans", 16
@@ -55,7 +50,6 @@ def generate_ticket_pdf(registration):
         c.drawString(x_text, y, line)
         y -= title_size + 4
 
-    # 3) Инфа о человеке, тарифе, цене
     info_font, info_size = "DejaVuSans", 12
     for text in [
         f"Учасник: {registration.qr_holder_name}",
@@ -66,8 +60,7 @@ def generate_ticket_pdf(registration):
         c.drawString(x_text, y, text)
         y -= info_size + 4
 
-    # 4) Описание события с переносами
-    y -= 200  # дополнительный отступ перед описанием
+    y -= 200 
     desc_font, desc_size = "DejaVuSans", 10
     max_desc_width = page_width - 80
     text_obj = c.beginText(40, y)
@@ -77,7 +70,6 @@ def generate_ticket_pdf(registration):
             text_obj.textLine(line)
     c.drawText(text_obj)
 
-    # 5) Данные квитанции
     c.setFont(desc_font, desc_size)
     c.drawString(40, 100, f"Квитанція №{registration.pk}")
     c.drawString(40, 80, f"Дата: {registration.registered_at.strftime('%Y-%m-%d %H:%M')}")

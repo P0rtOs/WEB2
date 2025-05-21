@@ -9,10 +9,10 @@ import {
   Grid,
 } from "@mui/material";
 import { useParams } from "react-router";
-import { apiEvents } from "../Auth_api.js";
+import { apiEvents } from "../Auth_api";
 
 const TicketPurchasePage = () => {
-  const { id } = useParams(); // Ожидаем, что id события передаётся в URL
+  const { id } = useParams();
   const [event, setEvent] = useState(null);
 
   useEffect(() => {
@@ -28,9 +28,6 @@ const TicketPurchasePage = () => {
   }, [id]);
 
   const handlePurchase = async (tierId) => {
-    // Пока что выводим заглушку
-    //alert("Ticket purchase functionality is under development.");
-    // При необходимости можно вызвать API:
     await apiEvents.post("/purchase-ticket/", { ticket_tier: tierId });
   };
 

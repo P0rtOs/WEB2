@@ -14,18 +14,18 @@ export default function TicketViewPage() {
     apiEvents
       .get(`/tickets/${id}/view/`)
       .then((res) => setReg(res.data))
-      .catch(() => setError("Билет не найден или что-то пошло не так"));
+      .catch(() => setError("Білет не найдений, або помилка"));
   }, [id]);
 
   const markUsed = () => {
     apiEvents
       .post(`/my-registrations/${id}/mark-used/`)
       .then(() => setReg((r) => ({ ...r, used: true })))
-      .catch(() => setError("Не удалось отметить как использованный"));
+      .catch(() => setError("Не вдалося відмітити"));
   };
 
   if (error) return <Alert severity="error">{error}</Alert>;
-  if (!reg) return <Typography>Загрузка…</Typography>;
+  if (!reg) return <Typography>Завантаження...</Typography>;
 
   return (
     <Box sx={{ p: 4, maxWidth: 600, mx: "auto" }}>
@@ -40,7 +40,7 @@ export default function TicketViewPage() {
         {reg.ticket_tier.price} грн
       </Typography>
       <Typography>
-        <strong>Использован:</strong> {reg.used ? "Да" : "Нет"}
+        <strong>Використано:</strong> {reg.used ? "Так" : "Ні"}
       </Typography>
       {!reg.used && (
         <Button
@@ -49,7 +49,7 @@ export default function TicketViewPage() {
           onClick={markUsed}
           sx={{ mt: 2 }}
         >
-          Отметить как использовано
+          Відмітити як використане
         </Button>
       )}
     </Box>

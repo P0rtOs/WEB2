@@ -4,8 +4,9 @@ from analytics.models import EventReport
 
 class EventReportInline(admin.TabularInline):
     model = EventReport
+    readonly_fields = ('created_at', 'file')
     extra = 0
-    readonly_fields = ('created_at','format','file')
+
 
 @admin.register(Event)
 class EventAdmin(admin.ModelAdmin):

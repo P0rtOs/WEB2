@@ -23,7 +23,7 @@ export default function GenerateQRModal({
   const handleGenerate = async () => {
     setError("");
     if (!name.trim()) {
-      setError("Введите полное имя");
+      setError("Введіть повне ім'я");
       return;
     }
     try {
@@ -37,7 +37,7 @@ export default function GenerateQRModal({
 
   return (
     <Dialog open={open} onClose={onClose}>
-      <DialogTitle>Генерация QR-билета</DialogTitle>
+      <DialogTitle>Генерація QR-білету</DialogTitle>
       <DialogContent>
         <TextField
           autoFocus
@@ -53,9 +53,9 @@ export default function GenerateQRModal({
         )}
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose}>Отмена</Button>
+        <Button onClick={onClose}>Відміна</Button>
         <Button variant="contained" onClick={handleGenerate}>
-          Сгенерировать
+          Згенерувати
         </Button>
       </DialogActions>
     </Dialog>

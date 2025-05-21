@@ -19,7 +19,7 @@ import {
   ProgramItemModal,
 } from "../components/EventModals";
 
-import { apiEvents } from "../Auth_api.js";
+import { apiEvents } from "../Auth_api";
 
 export default function EventForm({ initialData = null, onSuccess, onCancel }) {
   const isEdit = Boolean(initialData);

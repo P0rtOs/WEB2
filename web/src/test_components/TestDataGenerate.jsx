@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { apiEvents } from "../Auth_api.js";
+import { apiEvents } from "../Auth_api";
 import {
   Button,
   Table,

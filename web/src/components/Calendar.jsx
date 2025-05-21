@@ -1,19 +1,19 @@
-import React, { useEffect, useState } from 'react'
-import { Calendar, momentLocalizer } from 'react-big-calendar'
-import moment from 'moment'
-import 'react-big-calendar/lib/css/react-big-calendar.css'
-import { apiEvents } from "../Auth_api.js"
-import { useNavigate } from "react-router"
+import React, { useEffect, useState } from "react";
+import { Calendar, momentLocalizer } from "react-big-calendar";
+import moment from "moment";
+import "react-big-calendar/lib/css/react-big-calendar.css";
+import { apiEvents } from "../Auth_api";
+import { useNavigate } from "react-router";
 
-const localizer = momentLocalizer(moment)
-const EVENT_TYPES = ["meetup", "conference", "workshop", "webinar"]
+const localizer = momentLocalizer(moment);
+const EVENT_TYPES = ["meetup", "conference", "workshop", "webinar"];
 
 const BigCalendar = () => {
-  const navigate = useNavigate()
-  const [currentDate, setCurrentDate] = useState(new Date())
-  const [currentView, setCurrentView] = useState('month')
-  const [selectedType, setSelectedType] = useState("Всі")
-  const [events, setEvents] = useState([])
+  const navigate = useNavigate();
+  const [currentDate, setCurrentDate] = useState(new Date());
+  const [currentView, setCurrentView] = useState("month");
+  const [selectedType, setSelectedType] = useState("Всі");
+  const [events, setEvents] = useState([]);
 
   useEffect(() => {
     apiEvents
@@ -27,16 +27,16 @@ const BigCalendar = () => {
           end: new Date(event.end_date),
           allDay: false,
           resource: event,
-        }))
-        setEvents(mappedEvents)
+        }));
+        setEvents(mappedEvents);
       })
-      .catch((err) => console.error("Failed to fetch events:", err))
-  }, [])
+      .catch((err) => console.error("Failed to fetch events:", err));
+  }, []);
 
   const eventsToShow =
     selectedType === "Всі"
       ? events
-      : events.filter((event) => event.type === selectedType)
+      : events.filter((event) => event.type === selectedType);
 
   return (
     <div>
@@ -59,26 +59,26 @@ const BigCalendar = () => {
         ))}
       </div>
 
-      <div style={{ height: '900px', padding: '1rem' }}>
+      <div style={{ height: "900px", padding: "1rem" }}>
         <Calendar
           localizer={localizer}
           events={eventsToShow}
           startAccessor="start"
           endAccessor="end"
           defaultView="month"
-          views={['month', 'week', 'day', 'agenda']}
+          views={["month", "week", "day", "agenda"]}
           date={currentDate}
           view={currentView}
           onNavigate={(date) => setCurrentDate(date)}
           onView={(view) => setCurrentView(view)}
           onSelectEvent={(event) => {
-            navigate(`/events/${event.id}`)
+            navigate(`/events/${event.id}`);
           }}
           popup
         />
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default BigCalendar
+export default BigCalendar;

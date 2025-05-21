@@ -12,6 +12,7 @@ import {
   DialogTitle,
   DialogContent,
   IconButton,
+  Box,
 } from "@mui/material";
 import HomeIcon from "@mui/icons-material/Home";
 import SearchIcon from "@mui/icons-material/Search";
@@ -22,20 +23,33 @@ import BarChartIcon from "@mui/icons-material/BarChart";
 import TimelineIcon from "@mui/icons-material/Timeline";
 import ExtensionIcon from "@mui/icons-material/Extension";
 import LoginIcon from "@mui/icons-material/Login";
+import LogoutIcon from "@mui/icons-material/Logout";
 import CloseIcon from "@mui/icons-material/Close";
 import Login from "../components/Login";
 import { Link } from "react-router";
+import NotificationsPanel from "../components/NotificationsPanel";
+import { useSelector, useDispatch } from "react-redux";
+import { clearCurrentUser } from "../features/authSlice";
 
 const drawerWidth = 240;
 
 const Sidebar = () => {
   const [openLogin, setOpenLogin] = useState(false);
+  const dispatch = useDispatch();
+  const currentUser = useSelector((state) => state.auth.currentUser);
 
   const handleOpenLogin = () => {
     setOpenLogin(true);
   };
   const handleCloseLogin = () => {
     setOpenLogin(false);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("refreshToken");
+    dispatch(clearCurrentUser());
+    window.location.href = "/";
   };
 
   return (
@@ -66,11 +80,11 @@ const Sidebar = () => {
           {[
             { text: "Home", icon: <HomeIcon />, to: "/" },
             { text: "Search", icon: <SearchIcon />, to: "/search" },
-            {
-              text: "Notifications",
-              icon: <NotificationsIcon />,
-              to: "/notifications",
-            },
+            // {
+            //   text: "Notifications",
+            //   icon: <NotificationsIcon />,
+            //   to: "/notifications",
+            // },
             {
               text: "My Events",
               icon: <EventIcon />,
@@ -103,27 +117,57 @@ const Sidebar = () => {
 
         <Divider />
         <List sx={{ mt: "auto", mb: 65 }}>
-      <ListItem
-        button
-        onClick={handleOpenLogin}
-        sx={{
-          backgroundColor: "#C5CAE9", // трохи темніше синє
-          "&:hover": {
-            backgroundColor: "#9FA8DA", // ще темніше при наведенні
-          },
-          borderRadius: 1,
-        }}
-      >
-        <ListItemIcon sx={{ color: "#0D1821" }}>
-          <LoginIcon />
-        </ListItemIcon>
-        <ListItemText
-          primary="Login"
-          primaryTypographyProps={{ fontWeight: "bold", color: "#0D1821" }}
-        />
-      </ListItem>
-    </List>
-
+          <ListItem>
+            <Box
+              sx={{ width: "100%", display: "flex", justifyContent: "center" }}
+            >
+              <NotificationsPanel />
+            </Box>
+          </ListItem>
+          {currentUser ? (
+            <ListItem
+              button
+              onClick={handleLogout}
+              sx={{
+                backgroundColor: "#C5CAE9",
+                "&:hover": { backgroundColor: "#9FA8DA" },
+                borderRadius: 1,
+              }}
+            >
+              <ListItemIcon sx={{ color: "#0D1821" }}>
+                <LogoutIcon />
+              </ListItemIcon>
+              <ListItemText
+                primary="Logout"
+                primaryTypographyProps={{
+                  fontWeight: "bold",
+                  color: "#0D1821",
+                }}
+              />
+            </ListItem>
+          ) : (
+            <ListItem
+              button
+              onClick={handleOpenLogin}
+              sx={{
+                backgroundColor: "#C5CAE9",
+                "&:hover": { backgroundColor: "#9FA8DA" },
+                borderRadius: 1,
+              }}
+            >
+              <ListItemIcon sx={{ color: "#0D1821" }}>
+                <LoginIcon />
+              </ListItemIcon>
+              <ListItemText
+                primary="Login"
+                primaryTypographyProps={{
+                  fontWeight: "bold",
+                  color: "#0D1821",
+                }}
+              />
+            </ListItem>
+          )}
+        </List>
       </Drawer>
 
       {/* Login Modal */}

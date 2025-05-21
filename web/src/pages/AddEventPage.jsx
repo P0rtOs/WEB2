@@ -10,11 +10,15 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import Sidebar from "../components/Sidebar";
-import { apiEvents } from "../Auth_api.js";
+import { apiEvents } from "../Auth_api";
 import { useNavigate } from "react-router";
 
 import {
@@ -36,7 +40,7 @@ export default function AddEventPage() {
     location: "",
     start_date: "",
     end_date: "",
-    event_type: "conference", // по-умолчанию
+    event_type: "conference",
   });
   const [image, setImage] = useState(null);
   const [ticketTiers, setTicketTiers] = useState([]);
@@ -46,7 +50,6 @@ export default function AddEventPage() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-  // modal states
   const [tierModal, setTierModal] = useState({ open: false, idx: null });
   const [speakerModal, setSpeakerModal] = useState({ open: false, idx: null });
   const [sponsorModal, setSponsorModal] = useState({ open: false, idx: null });
@@ -56,7 +59,6 @@ export default function AddEventPage() {
     setEventForm((f) => ({ ...f, [e.target.name]: e.target.value }));
   const handleImage = (e) => setImage(e.target.files[0]);
 
-  // add/save/remove helpers
   const saveItem = (arr, setArr, modal, data) => {
     setArr((prev) => {
       if (modal.idx === null) return [...prev, data];

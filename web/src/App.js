@@ -21,7 +21,7 @@ import "./css/Main.scss";
 
 import { useDispatch } from "react-redux";
 import { setCurrentUser, clearCurrentUser } from "./features/authSlice";
-import { getUserProfile, setAuthToken } from "./Auth_api.js";
+import { getUserProfile, setAuthToken } from "./Auth_api";
 
 // 1) достаём токен из localStorage
 const token = localStorage.getItem("accessToken");

@@ -7,7 +7,6 @@ User = get_user_model()
 class CustomUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        # Добавляем поля, которые вы хотите видеть в профиле
         fields = ('id', 'email', 'username', 'user_type', 'first_name', 'last_name', 'is_staff')
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
@@ -15,7 +14,6 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = User
-        # Заменяем 'role' на 'user_type'
         fields = ('id', 'email', 'username', 'password', 'user_type')
 
     def create(self, validated_data):
@@ -25,9 +23,7 @@ class GoogleAuthSerializer(serializers.Serializer):
     token = serializers.CharField()
 
     def validate(self, data):
-        # Можно добавить дополнительную валидацию
         return data
 
     def create(self, validated_data):
-        # Этот метод не используется, логика реализована в представлении
         pass

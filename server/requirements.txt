@@ -21,3 +21,6 @@ faker
 stripe
 qrcode
 reportlab
+celery
+channels
+redis

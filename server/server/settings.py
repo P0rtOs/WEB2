@@ -22,12 +22,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 dotenv_path = BASE_DIR / ".env"
 if dotenv_path.exists():
-    print(f"✅ Loading environment variables from: {dotenv_path}")  # Перевірка
+    print(f"✅ Loading environment variables from: {dotenv_path}") 
     load_dotenv(dotenv_path)
 else:
     print("⚠️ .env file missing.")
 
-white_list = ['http://localhost:8000/accounts/profile'] # URL you add to google developers console as allowed to make redirection
+white_list = ['http://localhost:8000/accounts/profile']
 
 
 STRIPE_SECRET_KEY = os.getenv("STRIPE_SECRET_KEY")
@@ -49,9 +49,11 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
-    'users',       # наше приложение для пользователей
-    'events',      # приложение для событий
+    'users',      
+    'events',      
     'analytics',
+    'channels',
+    'notifications',
 
 
 
@@ -64,7 +66,6 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist',
-
     'djoser',
     'corsheaders',
 ]
@@ -101,6 +102,13 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'server.wsgi.application'
+ASGI_APPLICATION = "server.asgi.application"
+
+CHANNEL_LAYERS = {
+  "default": {
+    "BACKEND": "channels.layers.InMemoryChannelLayer"
+  }
+}
 
 DJOSER = {
     "LOGIN_FIELD": "email",
@@ -209,3 +217,6 @@ SOCIAL_AUTH_GOOGLE_OAUTH2_SCOPE = [
     'https://www.googleapis.com/auth/userinfo.email',
     'https://www.googleapis.com/auth/userinfo.profile',
 ]
+
+CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL", "redis://redis:6379/0")
+CELERY_RESULT_BACKEND = CELERY_BROKER_URL

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
-import { setUserType, getUserType } from "../Auth_api.js";
+import { setUserType, getUserType } from "../Auth_api";
 import { useSelector, useDispatch } from "react-redux";
 
 const OrganizerButton = () => {

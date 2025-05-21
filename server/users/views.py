@@ -16,7 +16,6 @@ class UserLoginView(views.APIView):
     def post(self, request, *args, **kwargs):
         email = request.data.get('email')
         password = request.data.get('password')
-        # Передаем email как username
         user = authenticate(request, username=email, password=password)
         if user:
             refresh = RefreshToken.for_user(user)
@@ -32,17 +31,12 @@ class ToggleAdminView(views.APIView):
 
     def patch(self, request, *args, **kwargs):
         user = request.user
-        # Переключаем is_staff: если был False – становится True, иначе наоборот.
         user.is_staff = not user.is_staff
         user.save()
         serializer = CustomUserSerializer(user)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 class GoogleLoginView(views.APIView):
-    """
-    Принимает id_token от Google, проверяет его, создаёт или получает пользователя
-    и возвращает JWT токены.
-    """
     permission_classes = [AllowAny]
     def post(self, request):
         token = request.data.get("token")
@@ -72,7 +66,6 @@ class GoogleLoginView(views.APIView):
             defaults={"username": email, "user_type": "client"}
         )
         if created:
-            # Если необходимо, можно задать другой тип для пользователей Google
             user.user_type = "client"
             user.save()
 

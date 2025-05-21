@@ -13,15 +13,20 @@ import {
   FormControlLabel,
   Radio,
   Alert,
+  TextField,
+  List,
+  ListItem,
+  ListItemText,
 } from "@mui/material";
 import { useParams, useNavigate } from "react-router";
 import { useSelector } from "react-redux";
 import Sidebar from "../components/Sidebar.jsx";
 import EventForm from "../components/EventForm";
-import { apiEvents } from "../Auth_api.js";
+import { apiEvents } from "../Auth_api";
 import BuyTicketButton from "../components/BuyTicketButton";
 import EventAnalyticsChart from "../components/EventAnalyticsChart.jsx";
 import { stripePromise } from "../stripe"; // ← импортируем stripePromise
+import { apiAnalytics } from "../Auth_api"; // <— новый инстанс
 
 const drawerWidth = 240;
 
@@ -103,6 +108,9 @@ const EventDetailPage = () => {
   const [buyOpen, setBuyOpen] = useState(false);
   // const [purchaseError, setPurchaseError] = useState("");
   const [editOpen, setEditOpen] = useState(false);
+  const [reports, setReports] = useState([]);
+  const [from, setFrom] = useState("");
+  const [to, setTo] = useState("");
 
   const isOrganizer =
     currentUser?.user_type === "organizer" &&
@@ -113,6 +121,19 @@ const EventDetailPage = () => {
   // const currentUserIsOrganizer =
   //   currentUser?.user_type === "organizer" &&
   //   event?.organizer === currentUser.id;
+
+  useEffect(() => {
+    if ((isOrganizer || isAdmin) && event) {
+      fetchReports();
+    }
+  }, [event, isOrganizer, isAdmin]);
+
+  const fetchReports = () => {
+    apiAnalytics
+      .get(`/events/${id}/reports/`)
+      .then((res) => setReports(res.data))
+      .catch(console.error);
+  };
 
   useEffect(() => {
     apiEvents
@@ -134,14 +155,22 @@ const EventDetailPage = () => {
   // };
 
   const handleDelete = async () => {
-    if (window.confirm("Вы уверены, что хотите удалить событие?")) {
+    if (window.confirm("Ви впевнені, що хочете видалити подію?")) {
       try {
         await apiEvents.delete(`/${id}/`);
         navigate("/events");
       } catch (err) {
-        console.error("Ошибка удаления:", err);
+        console.error("Помилка видалення:", err);
       }
     }
+  };
+  const handleGenerateReport = () => {
+    apiAnalytics
+      .post(`/events/${id}/generate-report/`, null, {
+        params: { date_from: from || undefined, date_to: to || undefined },
+      })
+      .then(() => fetchReports())
+      .catch(console.error);
   };
 
   if (!event) return null;
@@ -234,17 +263,88 @@ const EventDetailPage = () => {
             <Typography>Локація: {event.location}</Typography>
           </Box>
         </Box>
-      </Box>
+        <Typography variant="h5" gutterBottom>
+          Статистика продаж
+        </Typography>
+        <EventAnalyticsChart eventId={event.id} period="day" />
 
-      <Typography variant="h5" gutterBottom>
-        Статистика продаж
-      </Typography>
-      <EventAnalyticsChart eventId={event.id} period="day" />
-      <BuyTicketModal
-        open={buyOpen}
-        onClose={() => setBuyOpen(false)}
-        ticketTiers={tiers}
-      />
+        <BuyTicketModal
+          open={buyOpen}
+          onClose={() => setBuyOpen(false)}
+          ticketTiers={tiers}
+        />
+        {isOrganizer ||
+          (isAdmin && (
+            <Box
+              component="section"
+              sx={{
+                mt: 24, // увеличенный отступ сверху, чтобы не наслаивалось
+                p: 3,
+                border: "1px solid",
+                borderColor: "divider",
+                borderRadius: 1,
+              }}
+            >
+              <Typography variant="h5" gutterBottom>
+                Отчёты по продажам
+              </Typography>
+
+              <Box
+                sx={{
+                  display: "flex",
+                  gap: 2,
+                  mb: 2,
+                  alignItems: "center",
+                  mt: 4,
+                }}
+              >
+                <TextField
+                  label="From"
+                  type="date"
+                  size="small"
+                  value={from}
+                  onChange={(e) => setFrom(e.target.value)}
+                  InputLabelProps={{ shrink: true }}
+                />
+                <TextField
+                  label="To"
+                  type="date"
+                  size="small"
+                  value={to}
+                  onChange={(e) => setTo(e.target.value)}
+                  InputLabelProps={{ shrink: true }}
+                />
+                <Button variant="contained" onClick={handleGenerateReport}>
+                  Сгенерировать отчёт
+                </Button>
+              </Box>
+
+              {reports.length === 0 ? (
+                <Typography color="textSecondary">
+                  Ещё нет отчётов за указанный период.
+                </Typography>
+              ) : (
+                <List>
+                  {reports.map((r) => (
+                    <ListItem key={r.id} disablePadding>
+                      <ListItemText
+                        primary={new Date(r.created_at).toLocaleString()}
+                      />
+                      <Button
+                        component="a"
+                        href={r.file}
+                        target="_blank"
+                        rel="noopener"
+                      >
+                        Скачать
+                      </Button>
+                    </ListItem>
+                  ))}
+                </List>
+              )}
+            </Box>
+          ))}
+      </Box>
 
       {/* Модалка редактирования */}
       <Dialog

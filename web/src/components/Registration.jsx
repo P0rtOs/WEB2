@@ -1,7 +1,7 @@
 // src/components/Registration.jsx
 import React, { useState } from "react";
 import { useNavigate } from "react-router";
-import { registerUser } from "../Auth_api.js";
+import { registerUser } from "../Auth_api";
 import {
   Container,
   Box,

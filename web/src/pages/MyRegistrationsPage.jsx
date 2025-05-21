@@ -13,7 +13,7 @@ import {
 } from "@mui/material";
 import Sidebar from "../components/Sidebar";
 import GenerateQRModal from "../components/GenerateQRModal.jsx";
-import { apiEvents, openTicketPdf } from "../Auth_api.js";
+import { apiEvents, openTicketPdf } from "../Auth_api";
 
 const drawerWidth = 240;
 

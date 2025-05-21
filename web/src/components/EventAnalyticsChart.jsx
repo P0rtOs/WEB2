@@ -9,7 +9,7 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
-import { apiEvents } from "../Auth_api.js";
+import { apiEvents } from "../Auth_api";
 
 export default function EventAnalyticsChart({ eventId, period = "day" }) {
   const [data, setData] = useState([]);
@@ -33,20 +33,20 @@ export default function EventAnalyticsChart({ eventId, period = "day" }) {
       .catch(console.error);
   }, [eventId, period]);
 
-  if (!data.length) return <p>Нет данных для отображения.</p>;
+  if (!data.length) return <p>Немає даних.</p>;
 
   return (
     <ResponsiveContainer width="100%" height={300}>
-      <h2 className="text-xl font-semibold mb-3">Аналитика события</h2>
+      <h2 className="text-xl font-semibold mb-3">Аналітика події</h2>
       <p>
-        Продано билетов: <strong>{summary.total_tickets}</strong>
+        Продано білетів: <strong>{summary.total_tickets}</strong>
       </p>
       <p>
-        Выручка: <strong>{summary.total_revenue} грн</strong>
+        Виручка: <strong>{summary.total_revenue} грн</strong>
       </p>
-      {isPast && summary.used_tickets !== undefined && (
+      {summary.used_tickets !== undefined && (
         <p>
-          Использовано билетов: <strong>{summary.used_tickets}</strong>
+          Використано білетів: <strong>{summary.used_tickets}</strong>
         </p>
       )}
       <LineChart data={data}>
@@ -54,8 +54,8 @@ export default function EventAnalyticsChart({ eventId, period = "day" }) {
         <YAxis />
         <Tooltip />
         <Legend />
-        <Line type="monotone" dataKey="tickets" name="Продано билетов" />
-        <Line type="monotone" dataKey="revenue" name="Выручка, грн" />
+        <Line type="monotone" dataKey="tickets" name="Продано білетів" />
+        <Line type="monotone" dataKey="revenue" name="Виручка, грн" />
       </LineChart>
     </ResponsiveContainer>
   );

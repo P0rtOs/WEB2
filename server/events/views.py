@@ -18,24 +18,24 @@ from io import BytesIO
 from django.core.files.base import ContentFile
 from django.http import FileResponse, Http404
 from .utils import generate_ticket_pdf
+from notifications.tasks import schedule_reminder
 
 import os
 import stripe
 import qrcode
-
+import requests
 import random
 import datetime
 from faker import Faker
 
 
 class EventListCreateView(generics.ListCreateAPIView):
-    queryset = Event.objects.all()
+    queryset = Event.objects.all().order_by('-created_at')
     serializer_class = EventSerializer
     parser_classes = [MultiPartParser, FormParser]
 
     def get_permissions(self):
         if self.request.method == "POST":
-            # Допустим, только организаторы могут создавать события
             return [permissions.IsAuthenticated(), IsOrganizer()]
         return [permissions.AllowAny()]
 
@@ -52,7 +52,6 @@ class EventDetailView(generics.RetrieveUpdateDestroyAPIView):
             return [permissions.IsAuthenticated(), IsEventOwnerOrStaff()]
         return [permissions.AllowAny()]
 
-# Новый эндпоинт для покупки билета (заглушка)
 class TicketPurchaseView(views.APIView):
     permission_classes = [permissions.IsAuthenticated]
 
@@ -73,24 +72,24 @@ class TicketPurchaseView(views.APIView):
             ticket_tier = tier,
             paid = True
         )
+        delta = reg.event.start_date - datetime.timedelta(hours=1)
+        eta = delta if delta > timezone.now() else timezone.now()
+        schedule_reminder.apply_async((reg.id,), eta=eta)
         return Response(RegistrationSerializer(reg).data, status=201)
 
 class TicketDownloadView(views.APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request, pk):
-        # fetch only your own registrations
         try:
             reg = Registration.objects.get(pk=pk, participant=request.user)
         except Registration.DoesNotExist:
             raise Http404
 
-        # if there's no PDF yet, generate & save it
         if not reg.ticket_pdf:
             pdf_file = generate_ticket_pdf(reg)
             reg.ticket_pdf.save(f"ticket_{reg.pk}.pdf", pdf_file, save=True)
 
-        # now we know ticket_pdf exists
         return FileResponse(
             reg.ticket_pdf.open("rb"),
             as_attachment=True,
@@ -110,15 +109,6 @@ class TicketMarkUsedView(views.APIView):
         reg.save(update_fields=["used"])
         return Response({"status": "marked_used"}, status=200)
 
-# class RegistrationCreateView(generics.CreateAPIView):
-#     queryset = Registration.objects.all()
-#     serializer_class = RegistrationSerializer
-#     permission_classes = [permissions.IsAuthenticated]
-
-#     def perform_create(self, serializer):
-#         serializer.save(participant=self.request.user)
-
-# Аналитика для организаторов: список их событий с числом регистраций
 class OrganizerAnalyticsView(views.APIView):
     permission_classes = [permissions.IsAuthenticated]
     
@@ -134,22 +124,57 @@ class OrganizerAnalyticsView(views.APIView):
             })
         return Response(data, status=status.HTTP_200_OK)
 
-# Аналитика для администраторов: общая статистика по платформе
 class AdminAnalyticsView(views.APIView):
     permission_classes = [permissions.IsAuthenticated]
-    
+
     def get(self, request, *args, **kwargs):
+        # 1) Только админам
         if not request.user.is_staff:
             return Response({"error": "Forbidden"}, status=status.HTTP_403_FORBIDDEN)
-        total_events = Event.objects.count()
-        total_registrations = Registration.objects.count()
-        return Response({
-            'total_events': total_events,
-            'total_registrations': total_registrations,
-        }, status=status.HTTP_200_OK)
+
+        period = request.query_params.get("period", "day")       
+        date_from = request.query_params.get("date_from")
+        date_to   = request.query_params.get("date_to")
+
+        qs = Registration.objects.filter(paid=True)
+        if date_from:
+            qs = qs.filter(registered_at__date__gte=date_from)
+        if date_to:
+            qs = qs.filter(registered_at__date__lte=date_to)
+
+        trunc = TruncHour("registered_at") if period == "hour" else TruncDay("registered_at")
+
+        agg = (
+            qs
+            .annotate(period=trunc)
+            .values("period")
+            .annotate(
+                tickets=Count("id"),
+                revenue=Sum(F("ticket_tier__price"), output_field=DecimalField()),
+            )
+            .order_by("period")
+        )
+
+        series = [
+            {
+                "period": x["period"].isoformat(),
+                "tickets": x["tickets"],
+                "revenue": float(x["revenue"] or 0),
+            }
+            for x in agg
+        ]
+
+        summary = {
+            "total_events": Event.objects.count(),
+            "total_users": CustomUser.objects.count(),
+            "total_tickets": sum(item["tickets"] for item in series),
+            "total_revenue": sum(item["revenue"] for item in series),
+            "used_tickets": qs.filter(used=True).count(),
+        }
+
+        return Response({"summary": summary, "series": series}, status=status.HTTP_200_OK)
 
 
-# 2) Список своих регистраций (для клиента):
 class MyRegistrationsView(generics.ListAPIView):
     serializer_class = RegistrationSerializer
     permission_classes = [permissions.IsAuthenticated]
@@ -157,7 +182,6 @@ class MyRegistrationsView(generics.ListAPIView):
     def get_queryset(self):
         return Registration.objects.filter(participant=self.request.user)
 
-# 3) Список своих ивентов (для организатора):
 class MyEventsView(generics.ListAPIView):
     serializer_class = EventSerializer
     permission_classes = [permissions.IsAuthenticated]
@@ -166,7 +190,6 @@ class MyEventsView(generics.ListAPIView):
         return Event.objects.filter(organizer=self.request.user)
 
 
-# Фільтрація подій за типом
 class EventByTypeView(generics.ListAPIView):
     serializer_class = EventSerializer
 
@@ -178,15 +201,13 @@ class EventByTypeView(generics.ListAPIView):
 
 
 class TestDataGenerateView(views.APIView):
-    """Генерирует тестовые данные: организаторов, клиентов, события и регистрации (покупки билетов)."""
     permission_classes = [IsAdminUser]
 
     def post(self, request, *args, **kwargs):
         fake = Faker()
         password = 'TestPass123'
-        accounts = []  # список учетных данных для вывода
+        accounts = []
 
-        # 1) Создаем организаторов
         organizers = []
         for _ in range(10):
             email = fake.unique.email()
@@ -198,7 +219,6 @@ class TestDataGenerateView(views.APIView):
             organizers.append(user)
             accounts.append({'email': email, 'password': password})
 
-        # 2) Создаем клиентов
         clients = []
         for _ in range(50):
             email = fake.unique.email()
@@ -212,15 +232,12 @@ class TestDataGenerateView(views.APIView):
 
         event_types = [choice[0] for choice in Event.EVENT_TYPES]
 
-        # 3) Для каждого организатора создаем события и покупки билетов
         for org in organizers:
             for _ in range(5):
-                # Создаем событие
-                start_date = fake.date_time_between(start_date='-30d', end_date='now', tzinfo=datetime.timezone.utc)
+                start_date = fake.date_time_between(start_date='-30d', end_date='+30d', tzinfo=datetime.timezone.utc)
                 end_date   = start_date + datetime.timedelta(hours=random.randint(1,8))
                 event_type  = random.choice(event_types)
                 
-                # Создаем событие
                 event = Event.objects.create(
                     title=fake.sentence(nb_words=6),
                     description="\n\n".join(fake.paragraphs(nb=3)),
@@ -234,14 +251,13 @@ class TestDataGenerateView(views.APIView):
                     image_response = requests.get('https://picsum.photos/600/400', timeout=5)
                     if image_response.status_code == 200:
                         event.image.save(
-                            f"{fake.uuid4()}.jpg",  # випадкове імʼя
+                            f"{fake.uuid4()}.jpg", 
                             ContentFile(image_response.content),
                             save=True
                         )
                 except Exception as e:
                     print("Image load failed:", e)
                 
-                # Спикеры
                 for __ in range(random.randint(1,3)):
                     sp, _ = Speaker.objects.get_or_create(
                         name=fake.name(), bio=fake.text(max_nb_chars=200)
@@ -258,7 +274,6 @@ class TestDataGenerateView(views.APIView):
                     )
                     event.program_items.add(pi)
 
-                # Тарифы
                 for tier_name in ['Standard', 'VIP']:
                     price = random.uniform(10, 200)
                     tier = TicketTier.objects.create(
@@ -269,27 +284,22 @@ class TestDataGenerateView(views.APIView):
                         ticket_type='paid'
                     )
 
-                    # Генерируем покупки для этого тарифа
-                    # Выбираем случайных клиентов для покупки
                     buyers = random.sample(clients, k=random.randint(0, len(clients)))
                     for buyer in buyers[:random.randint(0, 20)]:
-                        # Выбираем случайную дату покупки между созданием события и сейчас
+    
                         purchase_date = fake.date_time_between(
                             start_date=event.start_date - datetime.timedelta(days=30),
                             end_date=min(event.end_date, datetime.datetime.now(datetime.timezone.utc)),
                             tzinfo=datetime.timezone.utc
                         )
-                        # Флаг использования билета: только если событие уже прошло
                         used_flag = purchase_date < datetime.datetime.now(datetime.timezone.utc) and bool(random.getrandbits(1))
 
-                        # Создаем регистрацию
                         reg = Registration(
                             event=event,
                             participant=buyer,
                             ticket_tier=tier,
                             paid=True
                         )
-                        # Устанавливаем дату регистрации и статус использования
                         reg.registered_at = purchase_date
                         reg.used = used_flag
                         reg.save()
@@ -301,17 +311,12 @@ class GenerateQRView(views.APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, pk):
-        """
-        Генерировать QR-билет для регистрации pk.
-        В теле запроса: {"qr_holder_name": "Полное Имя"}
-        """
         try:
             reg = Registration.objects.get(pk=pk, participant=request.user)
         except Registration.DoesNotExist:
             return Response({"error":"Registration not found"}, status=404)
 
         if reg.qr_code:
-            # Уже есть — не генерируем повторно
             serializer = RegistrationSerializer(reg, context={'request': request})
             return Response(serializer.data)
 
@@ -319,7 +324,6 @@ class GenerateQRView(views.APIView):
         if not name:
             return Response({"error":"qr_holder_name is required"}, status=400)
 
-        # Собираем payload для QR
         payload = {
             "receipt_id": reg.id,
             "event_id": reg.event.id,
@@ -330,13 +334,11 @@ class GenerateQRView(views.APIView):
         qr.make(fit=True)
         img = qr.make_image(fill="black", back_color="white")
 
-        # Сохраняем картинку в поле qr_code
         buf = BytesIO()
         img.save(buf, format='PNG')
         file_name = f"reg_{reg.id}_qr.png"
         reg.qr_code.save(file_name, ContentFile(buf.getvalue()), save=False)
 
-        # Сохраняем имя и время генерации
         reg.qr_holder_name = name
         reg.qr_generated_at = timezone.now()
         reg.save()
@@ -345,16 +347,12 @@ class GenerateQRView(views.APIView):
         return Response(serializer.data, status=201)
 
 class TicketViewAPIView(generics.RetrieveAPIView):
-    """
-    Публичный просмотр билета по ссылке из QR.
-    Доступен без авторизации.
-    """
     queryset = Registration.objects.select_related('event','ticket_tier','participant')
     serializer_class = RegistrationSerializer
     permission_classes = [permissions.AllowAny]
 
 class SalesPointSerializer(serializers.Serializer):
-    period    = serializers.CharField()   # например "2025-05-01" или "2025-05-01T14"
+    period    = serializers.CharField()
     tickets   = serializers.IntegerField()
     revenue   = serializers.DecimalField(max_digits=12, decimal_places=2)
 
@@ -362,7 +360,6 @@ class EventSalesAnalyticsView(views.APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request, event_id):
-        # проверяем, что пользователь — организатор или админ
         try:
             event = Event.objects.get(pk=event_id)
         except Event.DoesNotExist:
@@ -372,7 +369,6 @@ class EventSalesAnalyticsView(views.APIView):
         if not (user.is_staff or event.organizer == user):
             return Response({"detail":"Forbidden"}, status=403)
 
-        # параметры
         period    = request.query_params.get("period","day")
         df        = request.query_params.get("date_from")
         dt        = request.query_params.get("date_to")
@@ -405,7 +401,6 @@ class EventSalesAnalyticsView(views.APIView):
             "revenue": float(x["revenue"] or 0)
         } for x in agg]
 
-        # отправляем вместе с общим итогом
         used_count = qs.filter(used=True).count()
         summary = {
             "total_tickets": sum(d["tickets"] for d in data),
@@ -434,7 +429,7 @@ class CreateCheckoutSessionView(views.APIView):
             payment_method_types=['card'],
             line_items=[{
                 'price_data': {
-                    'currency': 'uah',           # или 'uah'
+                    'currency': 'uah',         
                     'product_data': {'name': f"{tier.event.title} — {tier.title}"},
                     'unit_amount': int(tier.price * 100),
                 },

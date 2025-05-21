@@ -4,12 +4,12 @@ import { Container, Button, Typography, Grid } from "@mui/material";
 import { useSelector } from "react-redux";
 import Sidebar from "../components/Sidebar";
 import EventCard from "../components/EventCard";
-import { apiEvents } from "../Auth_api.js";
+import { apiEvents } from "../Auth_api";
 
 const drawerWidth = 240;
 
 const HomePage = () => {
-  const { role } = useSelector((state) => state.auth);
+  const currentUser = useSelector((state) => state.auth.currentUser);
   const [events, setEvents] = useState([]);
 
   useEffect(() => {
@@ -26,7 +26,7 @@ const HomePage = () => {
       <Container
         sx={{
           mt: 4,
-          ml: `calc(${drawerWidth}px`,
+          ml: `calc(${drawerWidth}px)`,
         }}
       >
         <Typography variant="h3" align="center" gutterBottom>
@@ -49,7 +49,7 @@ const HomePage = () => {
               Переглянути події
             </Button>
           </Grid>
-          {role === "organizer" && (
+          {currentUser?.user_type === "organizer" && (
             <Grid item>
               <Button variant="contained" color="success" href="/add-event">
                 Додати подію
