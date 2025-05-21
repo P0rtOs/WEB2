@@ -102,14 +102,28 @@ const Sidebar = () => {
         </List>
 
         <Divider />
-        <List sx={{ mt: "auto" }}>
-          <ListItem button onClick={handleOpenLogin}>
-            <ListItemIcon>
-              <LoginIcon />
-            </ListItemIcon>
-            <ListItemText primary="Login" />
-          </ListItem>
-        </List>
+        <List sx={{ mt: "auto", mb: 65 }}>
+      <ListItem
+        button
+        onClick={handleOpenLogin}
+        sx={{
+          backgroundColor: "#C5CAE9", // трохи темніше синє
+          "&:hover": {
+            backgroundColor: "#9FA8DA", // ще темніше при наведенні
+          },
+          borderRadius: 1,
+        }}
+      >
+        <ListItemIcon sx={{ color: "#0D1821" }}>
+          <LoginIcon />
+        </ListItemIcon>
+        <ListItemText
+          primary="Login"
+          primaryTypographyProps={{ fontWeight: "bold", color: "#0D1821" }}
+        />
+      </ListItem>
+    </List>
+
       </Drawer>
 
       {/* Login Modal */}

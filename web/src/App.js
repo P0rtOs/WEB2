@@ -16,6 +16,7 @@ import PaymentsSuccess from "./pages/PaymentsSuccess";
 import PaymentsCancel from "./pages/PaymentsCancel";
 import TicketViewPage from "./pages/TicketViewPage";
 import AdminReportsPage from "./pages/AdminReportsPage";
+import CalendarPage from "./pages/CalendarPage.jsx"; // <-- Імпорт сторінки календаря
 import "./css/Main.scss";
 
 import { useDispatch } from "react-redux";
@@ -54,13 +55,21 @@ function App() {
         <Route path="/add-event" element={<AddEventPage />} />
         <Route path="/events/:id" element={<EventDetailPage />} />
         <Route path="/purchase-ticket/:id" element={<TicketPurchasePage />} />
-        <Route path="/events/my-registrations"  element={<MyRegistrationsPage />}/>
-        <Route path="/analytics/organizer" element={<AnalyticsOrganizerPage />}/>
+        <Route
+          path="/events/my-registrations"
+          element={<MyRegistrationsPage />}
+        />
+        <Route
+          path="/analytics/organizer"
+          element={<AnalyticsOrganizerPage />}
+        />
         <Route path="/analytics/admin" element={<AnalyticsAdminPage />} />
         <Route path="/payments/success" element={<PaymentsSuccess />} />
         <Route path="/payments/cancel" element={<PaymentsCancel />} />
         <Route path="/tickets/:id/view" element={<TicketViewPage />} />
         <Route path="/admin/reports" component={<AdminReportsPage />} />
+        <Route path="/calendar" element={<CalendarPage />} />{" "}
+        {/* <-- Доданий маршрут */}
       </Routes>
     </Router>
   );

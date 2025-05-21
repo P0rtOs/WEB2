@@ -1,5 +1,5 @@
 import React from "react";
-import "../css/event_card.scss"
+import "../css/event_card.scss";
 
 import {
   Card,
@@ -12,7 +12,6 @@ import {
 } from "@mui/material";
 import { useNavigate } from "react-router";
 
-
 const EventCard = ({ event }) => {
   const navigate = useNavigate();
 
@@ -23,9 +22,10 @@ const EventCard = ({ event }) => {
   };
 
   const truncatedDescription =
-    event.description.length > 120
-      ? event.description.slice(0, 120) + "..."
-      : event.description;
+  event.description && event.description.length > 95
+    ? event.description.slice(0, 95).trimEnd() + "...."
+    : event.description || "";
+
 
   return (
     <Card className="event-card">
@@ -63,7 +63,7 @@ const EventCard = ({ event }) => {
             <Chip
               label={`Від ${getMinPrice()} грн`}
               color="primary"
-              size="small"
+              size="medium"
             />
           </Box>
         </CardContent>
